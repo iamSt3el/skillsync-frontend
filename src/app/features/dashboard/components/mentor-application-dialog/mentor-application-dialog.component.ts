@@ -7,9 +7,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SkillService, SkillResponse } from 'src/app/core/services/skill.service';
 import { MentorService } from 'src/app/core/services/mentor.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ToastService } from 'src/app/core/services/toast.service';
 
 @Component({
   selector: 'app-mentor-application-dialog',
@@ -22,17 +23,18 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatIconModule
+    MatIconModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './mentor-application-dialog.component.html',
   styleUrls: ['./mentor-application-dialog.component.scss']
 })
 export class MentorApplicationDialogComponent implements OnInit {
-  private dialogRef = inject(MatDialogRef<MentorApplicationDialogComponent>);
-  private fb = inject(FormBuilder);
+  private dialogRef    = inject(MatDialogRef<MentorApplicationDialogComponent>);
+  private fb           = inject(FormBuilder);
   private skillService = inject(SkillService);
   private mentorService = inject(MentorService);
-  private snackBar = inject(MatSnackBar);
+  private toast        = inject(ToastService);
 
   isSubmitting = signal(false);
 
@@ -75,17 +77,15 @@ export class MentorApplicationDialogComponent implements OnInit {
       this.mentorService.applyMentor(this.applicationForm.value).subscribe({
 
         // 3. Handle Success
-        next: (response) => {
-          this.snackBar.open('Application submitted successfully!', 'OK', { duration: 3000 });
-          this.dialogRef.close(true); // Close dialog and pass 'true' to let the parent know it worked
+        next: () => {
+          this.toast.success('Application submitted! Awaiting admin review.');
+          this.dialogRef.close(true);
           this.isSubmitting.set(false);
         },
-
-        // 4. Handle Error (This is the alternative to catchError)
         error: (err) => {
           console.error('Submission failed', err);
-          this.snackBar.open('Failed to submit application. Please try again.', 'Close', { duration: 4000 });
-          this.isSubmitting.set(false); // Stop loading so they can try again
+          this.toast.error('Failed to submit application. Please try again.');
+          this.isSubmitting.set(false);
         }
 
       });

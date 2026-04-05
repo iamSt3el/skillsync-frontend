@@ -1,7 +1,9 @@
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { Component, inject } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { AuthService } from 'src/app/core/auth/auth.service';
+import { NotificationService } from 'src/app/core/services/notification.service';
 import { SidebarComponent } from 'src/app/core/layout/sidebar/sidebar.component';
 import { GroupsComponent } from 'src/app/features/groups/groups.component';
 import { FindMentorsComponent } from 'src/app/features/mentors/find-mentors/find-mentors.component';
@@ -17,12 +19,28 @@ import { MentorApprovalsComponent } from 'src/app/features/admin/mentor-approval
 import { PlatformAnalyticsComponent } from 'src/app/features/admin/platform-analytics/platform-analytics.component';
 import { SkillCatalogComponent } from '../admin/skill-catalog/skill-catalog.component';
 
+const PAGE_LABELS: Record<string, { label: string; icon: string }> = {
+  overview:         { label: 'Dashboard',       icon: 'dashboard' },
+  'find-mentors':   { label: 'Find Mentors',     icon: 'manage_search' },
+  sessions:         { label: 'My Sessions',      icon: 'event_note' },
+  groups:           { label: 'Learning Groups',  icon: 'groups' },
+  reviews:          { label: 'Reviews',          icon: 'rate_review' },
+  profile:          { label: 'My Profile',       icon: 'person' },
+  notifications:    { label: 'Notifications',    icon: 'notifications' },
+  'admin-users':    { label: 'User Management',  icon: 'manage_accounts' },
+  'admin-approvals':{ label: 'Mentor Approvals', icon: 'admin_panel_settings' },
+  'admin-analytics':{ label: 'Analytics',        icon: 'analytics' },
+  'skill-catalog':  { label: 'Skill Catalog',    icon: 'library_books' },
+};
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
     AsyncPipe,
+    CommonModule,
     MatIconModule,
+    MatButtonModule,
     SidebarComponent,
     LearnerDashboardComponent,
     MentorDashboardComponent,
@@ -36,14 +54,46 @@ import { SkillCatalogComponent } from '../admin/skill-catalog/skill-catalog.comp
     UserManagementComponent,
     MentorApprovalsComponent,
     PlatformAnalyticsComponent,
-    SkillCatalogComponent
+    SkillCatalogComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent {
-  authService = inject(AuthService);
+export class DashboardComponent implements OnInit {
+  authService          = inject(AuthService);
+  private notifService = inject(NotificationService);
+
   activePage = 'overview';
+  unreadCount = signal(0);
+
+  userInitials = computed(() => {
+    const u = this.authService.currentUser;
+    const name = u?.name || u?.username || 'U';
+    return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+  });
+
+  pageInfo = computed(() => PAGE_LABELS[this.activePage] ?? { label: 'SkillSync', icon: 'dashboard' });
+
+  ngOnInit() {
+    if (!this.authService.currentUser && this.authService.token) {
+      this.authService.fetchProfile().subscribe();
+    }
+    const userId = this.authService.currentUser?.id;
+    if (userId) {
+      this.notifService.getForUser(userId).subscribe({
+        next: (data: any) => {
+          const list = Array.isArray(data) ? data : (data?.content ?? []);
+          this.unreadCount.set(list.filter((n: any) => !n.isRead).length);
+        },
+        error: () => {},
+      });
+    }
+  }
+
+  navigateTo(page: string) {
+    this.activePage = page;
+    if (page === 'notifications') this.unreadCount.set(0);
+  }
 
   get isLearner() { return this.authService.currentUser?.role?.toUpperCase().includes('LEARNER'); }
   get isMentor()  { return this.authService.currentUser?.role?.toUpperCase().includes('MENTOR'); }

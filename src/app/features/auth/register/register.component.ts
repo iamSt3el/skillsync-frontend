@@ -61,6 +61,13 @@ export class RegisterComponent {
         this.router.navigate(['/dashboard']);
       },
       error: (err: Error) => {
+        // If token is already stored, registration succeeded but fetchProfile failed.
+        // Navigate anyway — dashboard will re-fetch the profile.
+        if (this.authService.token) {
+          this.loading = false;
+          this.router.navigate(['/dashboard']);
+          return;
+        }
         this.errorMessage = err.message;
         this.loading = false;
       },

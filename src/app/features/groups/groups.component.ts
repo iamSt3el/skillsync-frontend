@@ -1,21 +1,22 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCard } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { GroupResponseDTO, GroupService } from 'src/app/core/services/group.service';
+import { CreateGroupDialogComponent } from './create-group-dialog/create-group-dialog.component';
 
 @Component({
   selector: 'app-groups',
   standalone: true,
   imports: [
     CommonModule, FormsModule, MatButtonModule, MatIconModule,
-    MatFormFieldModule, MatInputModule, MatProgressSpinnerModule, MatCard
+    MatFormFieldModule, MatInputModule, MatProgressSpinnerModule,
   ],
   templateUrl: './groups.component.html',
   styleUrls: ['./groups.component.scss'],
@@ -23,6 +24,7 @@ import { GroupResponseDTO, GroupService } from 'src/app/core/services/group.serv
 export class GroupsComponent implements OnInit {
   private authService  = inject(AuthService);
   private groupService = inject(GroupService);
+  private dialog       = inject(MatDialog);
 
   get user() { return this.authService.currentUser!; }
 
@@ -31,23 +33,15 @@ export class GroupsComponent implements OnInit {
   joined  = signal(new Set<number>());
 
   searchTerm = signal('');
-  activeTab = signal<'all' | 'joined' | 'created'>('all');
+  activeTab  = signal<'all' | 'joined' | 'created'>('all');
 
-  // Since the backend handles the tabs now, this only filters the search bar
   filtered = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
     if (!term) return this.groups();
-
     return this.groups().filter(g =>
       g.name.toLowerCase().includes(term) || g.description?.toLowerCase().includes(term)
     );
   });
-
-  // Create group form
-  showCreate = signal(false);
-  newName = '';
-  newDesc = '';
-  creating = signal(false);
 
   ngOnInit() {
     // 1. Fetch joined groups once strictly to track WHICH groups the user is in
@@ -134,19 +128,14 @@ join(groupId: number) {
     });
   }
 
-  createGroup() {
-    if (!this.newName.trim()) return;
-    this.creating.set(true);
-    this.groupService.create({ name: this.newName, description: this.newDesc, createdBy: this.user.id }).subscribe({
-      next: group => {
-        // Instantly switch to the 'created' tab to show their new group
-        this.setTab('created');
-        this.newName = '';
-        this.newDesc = '';
-        this.showCreate.set(false);
-        this.creating.set(false);
-      },
-      error: () => { this.creating.set(false); },
+  openCreateDialog() {
+    const ref = this.dialog.open(CreateGroupDialogComponent, {
+      width: '480px',
+      maxWidth: '95vw',
+      panelClass: 'ss-dialog',
+    });
+    ref.afterClosed().subscribe(group => {
+      if (group) this.setTab('created');
     });
   }
 

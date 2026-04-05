@@ -12,24 +12,177 @@
   overflow: hidden;
 }
 
+/* ── Sidebar ─────────────────────────────────────── */
 .sidebar-wrap {
   width: 220px;
   min-width: 220px;
   background: #0d1b2a;
   height: 100%;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
+/* ── Content Area (topbar + main) ────────────────── */
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f4f6f9;
+}
+
+/* ── Topbar ──────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.75rem;
+  height: 60px;
+  min-height: 60px;
+  background: #ffffff;
+  border-bottom: 1px solid #e8ecf0;
+  z-index: 100;
+  flex-shrink: 0;
+  gap: 1rem;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.topbar-page-icon {
+  font-size: 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  color: #dd0031;
+}
+
+.topbar-page-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.2px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Notification Bell */
+.topbar-icon-btn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.15s;
+
+  mat-icon { font-size: 1.2rem; width: 1.2rem; height: 1.2rem; }
+  &:hover { background: #f1f5f9; color: #0f172a; }
+
+  &.has-badge { color: #0f172a; }
+}
+
+.notif-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #dd0031;
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 800;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  padding: 0 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border: 1.5px solid #fff;
+}
+
+/* User Avatar Button */
+.topbar-avatar-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 5px 10px 5px 5px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { background: #f8fafc; border-color: #cbd5e1; }
+}
+
+.topbar-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #dd0031, #ff4d6d);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.topbar-user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.topbar-username {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-role {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* ── Main Content Scroll Area ────────────────────── */
 .main-content {
   flex: 1;
-  background: #f4f6f9;
   overflow-y: auto;
 }
 
+/* ── Coming Soon ─────────────────────────────────── */
 .coming-soon {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; height: 100%; min-height: 400px;
-  gap: 0.75rem; color: #9ca3af; text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 400px;
+  gap: 0.75rem;
+  color: #9ca3af;
+  text-align: center;
+
+  mat-icon { font-size: 3rem; width: 3rem; height: 3rem; }
   h2 { font-size: 1.25rem; font-weight: 700; color: #374151; margin: 0; }
   p  { margin: 0; font-size: 0.875rem; }
 }

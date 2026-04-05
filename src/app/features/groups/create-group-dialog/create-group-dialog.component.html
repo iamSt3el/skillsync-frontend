@@ -1,0 +1,41 @@
+<div class="dialog-header">
+  <div class="dialog-icon">
+    <mat-icon>group_add</mat-icon>
+  </div>
+  <div class="dialog-title-block">
+    <h2 class="dialog-title">Create a Group</h2>
+    <p class="dialog-sub">Start a community around a shared topic</p>
+  </div>
+  <button class="close-btn" mat-icon-button (click)="cancel()">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<mat-dialog-content class="dialog-content">
+  <div class="form-section">
+    <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+      <mat-label>Group Name</mat-label>
+      <mat-icon matPrefix>groups</mat-icon>
+      <input matInput [(ngModel)]="name" placeholder="e.g. Advanced Angular Patterns" maxlength="80" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+      <mat-label>Description (optional)</mat-label>
+      <textarea matInput [(ngModel)]="description" rows="3"
+        placeholder="What will this group focus on? Who should join?"></textarea>
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions class="dialog-actions">
+  <button mat-stroked-button class="cancel-btn" (click)="cancel()">Cancel</button>
+  <button mat-flat-button class="create-btn"
+    [disabled]="creating() || !name.trim()"
+    (click)="submit()">
+    @if (creating()) {
+      <mat-spinner diameter="18" class="btn-spinner"></mat-spinner> Creating...
+    } @else {
+      <mat-icon>rocket_launch</mat-icon> Create Group
+    }
+  </button>
+</mat-dialog-actions>

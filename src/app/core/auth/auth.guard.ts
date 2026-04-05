@@ -6,7 +6,9 @@ import { AuthService } from './auth.service';
 export const authGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
-  if (authService.isLoggedIn) return true;
+  // Allow through if user object is loaded OR a token exists in storage
+  // (token exists = registration/login succeeded even if profile fetch lagged)
+  if (authService.isLoggedIn || !!authService.token) return true;
   return router.createUrlTree(['/login']);
 };
 

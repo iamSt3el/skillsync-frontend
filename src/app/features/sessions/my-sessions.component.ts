@@ -30,10 +30,14 @@ export class MySessionsComponent implements OnInit {
   filtered = computed(() => {
     const tab = this.activeTab();
     const all = this.sessions();
-    if (tab === 'upcoming')   return all.filter(s => s.status === 'REQUESTED' || s.status === 'ACCEPTED');
-    if (tab === 'completed')  return all.filter(s => s.status === 'COMPLETED');
-    if (tab === 'cancelled')  return all.filter(s => s.status === 'CANCELLED' || s.status === 'REJECTED');
-    return all;
+    // When user is a mentor, only show sessions where they are the mentor (not old learner sessions)
+    const base = this.isMentor
+      ? all.filter(s => s.learnerId !== this.user.id)
+      : all;
+    if (tab === 'upcoming')   return base.filter(s => s.status === 'REQUESTED' || s.status === 'ACCEPTED');
+    if (tab === 'completed')  return base.filter(s => s.status === 'COMPLETED');
+    if (tab === 'cancelled')  return base.filter(s => s.status === 'CANCELLED' || s.status === 'REJECTED');
+    return base;
   });
 
   tabs: { key: FilterTab; label: string }[] = [
