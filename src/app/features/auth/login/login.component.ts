@@ -92,9 +92,10 @@ export class LoginComponent implements OnInit {
     this.errorMessage = '';
 
     this.authService.googleLogin(response.credential).subscribe({
-      next: () => {
+      next: (user) => {
         this.googleLoading = false;
-        this.router.navigate(['/dashboard']);
+        const dest = user.role?.toUpperCase().includes('ADMIN') ? ['/dashboard/admin/overview'] : ['/dashboard'];
+        this.router.navigate(dest);
       },
       error: (err: Error) => {
         this.errorMessage = err.message;
@@ -111,9 +112,10 @@ export class LoginComponent implements OnInit {
 
     const { email, password } = this.loginForm.value;
     this.authService.login({ email: email!, password: password! }).subscribe({
-      next: () => {
+      next: (user) => {
         this.loading = false;
-        this.router.navigate(['/dashboard']);
+        const dest = user.role?.toUpperCase().includes('ADMIN') ? ['/dashboard/admin/overview'] : ['/dashboard'];
+        this.router.navigate(dest);
       },
       error: (err: Error) => {
         this.errorMessage = err.message;

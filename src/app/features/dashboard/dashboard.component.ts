@@ -1,7 +1,7 @@
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { NotificationService } from 'src/app/core/services/notification.service';
@@ -40,6 +40,7 @@ const PAGE_LABELS: Record<string, { label: string; icon: string }> = {
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   authService          = inject(AuthService);
+  private router       = inject(Router);
   private notifService = inject(NotificationService);
   private wsService    = inject(NotificationWebSocketService);
 
@@ -57,7 +58,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     if (!this.authService.currentUser && this.authService.token) {
-      this.authService.fetchProfile().subscribe();
+      this.authService.fetchProfile().subscribe(user => {
+        if (user.role?.toUpperCase().includes('ADMIN')) {
+          this.router.navigate(['/dashboard/admin/overview'], { replaceUrl: true });
+        }
+      });
+    } else if (this.authService.currentUser?.role?.toUpperCase().includes('ADMIN')) {
+      // Admin landed on /dashboard directly (e.g. page refresh) — redirect to admin overview
+      const url = this.router.url;
+      if (url === '/dashboard' || url === '/dashboard/overview') {
+        this.router.navigate(['/dashboard/admin/overview'], { replaceUrl: true });
+      }
     }
     const userId = this.authService.currentUser?.id;
     if (userId) {
