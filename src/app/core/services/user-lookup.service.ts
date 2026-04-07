@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { environment } from 'src/environments/environment';
 import { map, tap } from 'rxjs/operators';
 
 export interface UserBasic {
@@ -13,7 +14,7 @@ export interface UserBasic {
 @Injectable({ providedIn: 'root' })
 export class UserLookupService {
   private http = inject(HttpClient);
-  private baseUrl = 'https://skillsync.mooo.com/api';
+  private baseUrl = environment.apiUrl;
 
   // Simple in-memory cache so we don't re-fetch the same users
   private cache = new Map<number, UserBasic>();

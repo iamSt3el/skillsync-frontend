@@ -8,6 +8,7 @@ import { SkeletonComponent } from 'src/app/shared/skeleton/skeleton.component';
 import { MentorResponse, MentorService } from 'src/app/core/services/mentor.service';
 import { ReviewResponseDTO, ReviewService } from 'src/app/core/services/review.service';
 import { SessionResponse, SessionService } from 'src/app/core/services/session.service';
+import { UserBasic, UserLookupService } from 'src/app/core/services/user-lookup.service';
 
 @Component({
   selector: 'app-mentor-dashboard',
@@ -21,13 +22,15 @@ export class MentorDashboardComponent implements OnInit {
   private sessionService = inject(SessionService);
   private mentorService  = inject(MentorService);
   private reviewService  = inject(ReviewService);
+  private userLookup     = inject(UserLookupService);
 
   get user() { return this.authService.currentUser!; }
 
-  sessions      = signal<SessionResponse[]>([]);
-  mentorProfile = signal<MentorResponse | null>(null);
-  reviews       = signal<ReviewResponseDTO[]>([]);
-  loading       = signal(true);
+  sessions        = signal<SessionResponse[]>([]);
+  mentorProfile   = signal<MentorResponse | null>(null);
+  reviews         = signal<ReviewResponseDTO[]>([]);
+  reviewerUserMap = signal(new Map<number, UserBasic>());
+  loading         = signal(true);
 
   firstName = computed(() => this.user?.name?.split(' ')[0] ?? this.user?.username ?? 'Mentor');
 
@@ -65,19 +68,23 @@ export class MentorDashboardComponent implements OnInit {
       error: ()   => { this.loading.set(false); },
     });
 
-    this.mentorService.getAll().subscribe({
-      next: (data: any) => {
-        const list: MentorResponse[] = Array.isArray(data) ? data : (data?.content ?? []);
-        const profile = list.find(m => m.userId === this.user.id) ?? null;
+    this.mentorService.getById(this.user.id).subscribe({
+      next: (profile) => {
         this.mentorProfile.set(profile);
         if (profile) {
           this.reviewService.getForMentor(profile.id).subscribe({
-            next: r => this.reviews.set(r.slice(0, 3)),
+            next: r => {
+              this.reviews.set(r.slice(0, 3));
+              const userIds = [...new Set(r.map(rv => rv.userId))];
+              if (userIds.length) {
+                this.userLookup.batchFetch(userIds).subscribe(map => this.reviewerUserMap.set(map));
+              }
+            },
             error: () => {},
           });
         }
       },
-      error: () => {},
+      error: () => { this.mentorProfile.set(null); },
     });
   }
 
@@ -102,6 +109,21 @@ export class MentorDashboardComponent implements OnInit {
   }
 
   stars(r: number) { return Array.from({ length: 5 }, (_, i) => i < Math.round(r)); }
+
+  reviewerName(userId: number): string {
+    return this.userLookup.displayName(this.reviewerUserMap().get(userId));
+  }
+
+  reviewerPicture(userId: number): string | undefined {
+    return this.reviewerUserMap().get(userId)?.profilePictureUrl ?? undefined;
+  }
+
+  reviewerInitials(userId: number): string {
+    const name = this.reviewerName(userId);
+    if (name === 'Unknown') return `U${userId}`.slice(0, 2).toUpperCase();
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
   learnerInitials(id: number) { return `L${id}`.slice(0, 2).toUpperCase(); }
   learnerColor(id: number) {
     return ['#e53935','#1e88e5','#43a047','#8e24aa','#f9a825'][id % 5];

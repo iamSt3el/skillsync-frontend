@@ -24,19 +24,57 @@ export class MentorApprovalsComponent implements OnInit {
   actionInProgress = signal<number | null>(null);
   toastMsg = signal<string | null>(null);
 
+  // Pagination
+  currentPage   = signal(0);
+  totalPages    = signal(0);
+  totalElements = signal(0);
+  readonly pageSize = 15;
+
+  pageNumbers = computed(() => {
+    const total = this.totalPages();
+    const cur   = this.currentPage();
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+    const pages: (number | '...')[] = [];
+    if (cur <= 3) {
+      pages.push(0, 1, 2, 3, 4, '...', total - 1);
+    } else if (cur >= total - 4) {
+      pages.push(0, '...', total - 5, total - 4, total - 3, total - 2, total - 1);
+    } else {
+      pages.push(0, '...', cur - 1, cur, cur + 1, '...', total - 1);
+    }
+    return pages;
+  });
+
   pending  = computed(() => this.mentors().filter(m => m.status === 'PENDING'));
   active   = computed(() => this.mentors().filter(m => m.status === 'ACTIVE'));
   rejected = computed(() => this.mentors().filter(m => m.status === 'REJECTED'));
 
+  get rangeStart() { return this.currentPage() * this.pageSize + 1; }
+  get rangeEnd()   { return Math.min((this.currentPage() + 1) * this.pageSize, this.totalElements()); }
+
   ngOnInit() {
-    this.adminService.getAllMentors().subscribe({
-      next: (data: any) => {
-        const list: MentorResponse[] = Array.isArray(data) ? data : (data?.content ?? []);
-        this.mentors.set(list);
+    this.loadPage(0);
+  }
+
+  loadPage(page: number) {
+    this.loading.set(true);
+    this.error.set(false);
+    this.adminService.getAllMentors(page, this.pageSize).subscribe({
+      next: data => {
+        this.mentors.set(data.content);
+        this.currentPage.set(data.number);
+        this.totalPages.set(data.totalPages);
+        this.totalElements.set(data.totalElements);
         this.loading.set(false);
       },
       error: () => { this.error.set(true); this.loading.set(false); },
     });
+  }
+
+  goToPage(page: number | '...') {
+    if (page === '...') return;
+    if (page < 0 || page >= this.totalPages()) return;
+    this.loadPage(page);
   }
 
   approve(mentor: MentorResponse) {
@@ -80,14 +118,14 @@ export class MentorApprovalsComponent implements OnInit {
 
   statusColor(status: string): string {
     const map: Record<string, string> = {
-      ACTIVE:   '#065f46', PENDING:  '#92400e', REJECTED: '#991b1b',
+      ACTIVE: '#065f46', PENDING: '#92400e', REJECTED: '#991b1b',
     };
     return map[status] ?? '#374151';
   }
 
   statusBg(status: string): string {
     const map: Record<string, string> = {
-      ACTIVE:   '#d1fae5', PENDING:  '#fef3c7', REJECTED: '#fee2e2',
+      ACTIVE: '#d1fae5', PENDING: '#fef3c7', REJECTED: '#fee2e2',
     };
     return map[status] ?? '#f3f4f6';
   }

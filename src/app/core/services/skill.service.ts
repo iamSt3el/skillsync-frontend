@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
+import { environment } from 'src/environments/environment';
 
 export interface SkillResponse {
   id: number;
@@ -11,7 +12,7 @@ export interface SkillResponse {
 @Injectable({ providedIn: 'root' })
 export class SkillService {
   private http = inject(HttpClient);
-  private baseUrl = 'https://skillsync.mooo.com/api';
+  private baseUrl = environment.apiUrl;
 
   getAll(): Observable<SkillResponse[]> {
     return this.http.get<SkillResponse[]>(`${this.baseUrl}/skills`);

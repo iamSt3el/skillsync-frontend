@@ -12,6 +12,7 @@ import { AuthService } from 'src/app/core/auth/auth.service';
 import { MentorResponse, MentorService } from 'src/app/core/services/mentor.service';
 import { ReviewResponseDTO, ReviewService } from 'src/app/core/services/review.service';
 import { SessionResponse, SessionService } from 'src/app/core/services/session.service';
+import { UserBasic, UserLookupService } from 'src/app/core/services/user-lookup.service';
 
 @Component({
   selector: 'app-reviews',
@@ -35,6 +36,7 @@ export class ReviewsComponent implements OnInit {
   private sessionService = inject(SessionService);
   private mentorService  = inject(MentorService);
   private reviewService  = inject(ReviewService);
+  private userLookup     = inject(UserLookupService);
 
   get user() { return this.authService.currentUser!; }
   get isLearner() { return this.user.role?.toUpperCase().includes('LEARNER'); }
@@ -52,8 +54,9 @@ export class ReviewsComponent implements OnInit {
   submitting    = signal(false);
 
   // Mentor: reviews received
-  mentorProfile = signal<MentorResponse | null>(null);
-  reviews       = signal<ReviewResponseDTO[]>([]);
+  mentorProfile  = signal<MentorResponse | null>(null);
+  reviews        = signal<ReviewResponseDTO[]>([]);
+  reviewerUserMap = signal(new Map<number, UserBasic>());
 
   ngOnInit() {
     if (this.isLearner) {
@@ -65,21 +68,27 @@ export class ReviewsComponent implements OnInit {
         error: () => { this.loading.set(false); },
       });
     } else {
-      this.mentorService.getAll().subscribe({
-        next: (data: any) => {
-          const list: MentorResponse[] = Array.isArray(data) ? data : (data?.content ?? []);
-          const profile = list.find(m => m.userId === this.user.id) ?? null;
+      // mentor.id == userId by design, so getById(userId) fetches the mentor profile directly
+      this.mentorService.getById(this.user.id).subscribe({
+        next: (profile) => {
           this.mentorProfile.set(profile);
           if (profile) {
             this.reviewService.getForMentor(profile.id).subscribe({
-              next: r => { this.reviews.set(r); this.loading.set(false); },
+              next: r => {
+                this.reviews.set(r);
+                this.loading.set(false);
+                const userIds = [...new Set(r.map(rv => rv.userId))];
+                if (userIds.length) {
+                  this.userLookup.batchFetch(userIds).subscribe(map => this.reviewerUserMap.set(map));
+                }
+              },
               error: () => { this.loading.set(false); },
             });
           } else {
             this.loading.set(false);
           }
         },
-        error: () => { this.loading.set(false); },
+        error: () => { this.mentorProfile.set(null); this.loading.set(false); },
       });
     }
   }
@@ -123,7 +132,20 @@ export class ReviewsComponent implements OnInit {
     return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
-  learnerInitials(id: number) { return `U${id}`.slice(0, 2); }
+  reviewerName(userId: number): string {
+    return this.userLookup.displayName(this.reviewerUserMap().get(userId));
+  }
+
+  reviewerPicture(userId: number): string | undefined {
+    return this.reviewerUserMap().get(userId)?.profilePictureUrl ?? undefined;
+  }
+
+  reviewerInitials(userId: number): string {
+    const name = this.reviewerName(userId);
+    if (name === 'Unknown') return `U${userId}`.slice(0, 2).toUpperCase();
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
   learnerColor(id: number) {
     return ['#e53935','#1e88e5','#43a047','#8e24aa','#f59e0b'][id % 5];
   }

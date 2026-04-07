@@ -380,6 +380,8 @@
   font-size: 0.78rem;
   font-weight: 700;
   flex-shrink: 0;
+
+  &--img { object-fit: cover; }
 }
 
 .review-meta { display: flex; flex-direction: column; }

@@ -84,15 +84,12 @@ export class PlatformAnalyticsComponent implements OnInit {
   ]);
 
   ngOnInit() {
-    this.adminService.getAllUsers().subscribe({
-      next: data => { this.users.set(data); this.loading.set(false); },
+    this.adminService.getAllUsers(0, 1000).subscribe({
+      next: data => { this.users.set(data.content); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
-    this.adminService.getAllMentors().subscribe({
-      next: (data: any) => {
-        const list: MentorResponse[] = Array.isArray(data) ? data : (data?.content ?? []);
-        this.mentors.set(list);
-      },
+    this.adminService.getAllMentors(0, 1000).subscribe({
+      next: data => { this.mentors.set(data.content); },
       error: () => {},
     });
   }

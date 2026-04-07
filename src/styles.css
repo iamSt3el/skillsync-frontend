@@ -24,3 +24,5 @@ html, body {
 
 /* Prevent horizontal scroll on mobile */
 * { max-width: 100%; }
+svg, svg * { max-width: none; }
+

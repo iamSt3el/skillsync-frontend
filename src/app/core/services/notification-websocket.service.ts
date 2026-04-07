@@ -3,6 +3,7 @@ import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { Subject, EMPTY } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
+import { environment } from 'src/environments/environment';
 import { NotificationResponse } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
@@ -21,7 +22,7 @@ export class NotificationWebSocketService implements OnDestroy {
     if (!token || this.socket$) return;
 
     this.socket$ = webSocket<NotificationResponse>({
-      url: `wss://skillsync.mooo.com/notifications/ws?token=${token}`,
+      url: `${environment.wsUrl}?token=${token}`,
       openObserver: {
         next: () => console.log('[WS] Notification socket connected'),
       },

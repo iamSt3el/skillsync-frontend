@@ -3,13 +3,14 @@ import { inject, Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { BehaviorSubject, catchError, Observable, switchMap, tap, throwError } from "rxjs";
 import { AuthResponse, LoginRequest, RegisterRequest, UserDTO } from "./auth.model";
+import { environment } from 'src/environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  private baseUrl = "https://skillsync.mooo.com/api";
+  private baseUrl = environment.apiUrl;
 
   private currentUserSubject = new BehaviorSubject<UserDTO | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();

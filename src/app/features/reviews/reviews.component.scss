@@ -123,9 +123,11 @@
 .review-top { display: flex; align-items: center; gap: 1rem; }
 
 .reviewer-avatar {
-  width: 44px; height: 44px; border-radius: 12px; /* Squircle */
+  width: 44px; height: 44px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-size: 0.95rem; font-weight: 700; flex-shrink: 0;
+
+  &--img { object-fit: cover; }
 }
 
 .reviewer-info { flex: 1; min-width: 0; }

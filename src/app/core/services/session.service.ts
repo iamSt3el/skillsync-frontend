@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
+import { environment } from 'src/environments/environment';
 
 /** * Session status types matching your backend logic
  */
@@ -31,7 +32,7 @@ export interface BookSessionPayload {
 @Injectable({ providedIn: 'root' })
 export class SessionService {
   private http = inject(HttpClient);
-  private baseUrl = 'https://skillsync.mooo.com/api';
+  private baseUrl = environment.apiUrl;
 
   /**
    * Fetch all sessions associated with a user ID

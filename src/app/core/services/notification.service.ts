@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
+import { environment } from 'src/environments/environment';
 
 export interface NotificationResponse {
   id: number;
@@ -14,7 +15,7 @@ export interface NotificationResponse {
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   private http = inject(HttpClient);
-  private baseUrl = 'https://skillsync.mooo.com/api';
+  private baseUrl = environment.apiUrl;
 
   getForUser(userId: number): Observable<NotificationResponse[]> {
     return this.http.get<NotificationResponse[]>(`${this.baseUrl}/notifications/user/${userId}`);

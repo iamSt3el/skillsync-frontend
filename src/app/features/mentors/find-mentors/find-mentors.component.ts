@@ -41,6 +41,27 @@ export class FindMentorsComponent implements OnInit {
   loading  = signal(true);
   apiError = signal('');
 
+  // Pagination
+  currentPage   = signal(0);
+  totalPages    = signal(0);
+  totalElements = signal(0);
+  readonly pageSize = 12;
+
+  pageNumbers = computed(() => {
+    const total = this.totalPages();
+    const cur   = this.currentPage();
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+    const pages: (number | '...')[] = [];
+    if (cur <= 3) {
+      pages.push(0, 1, 2, 3, 4, '...', total - 1);
+    } else if (cur >= total - 4) {
+      pages.push(0, '...', total - 5, total - 4, total - 3, total - 2, total - 1);
+    } else {
+      pages.push(0, '...', cur - 1, cur, cur + 1, '...', total - 1);
+    }
+    return pages;
+  });
+
   filters         = signal<MentorFilters>({ sortBy: 'rating' });
   selectedSkillId = signal<number | null>(null);
   minRating       = signal<number | null>(null);
@@ -48,6 +69,7 @@ export class FindMentorsComponent implements OnInit {
   searchTerm      = signal('');
   filtersOpen     = signal(false);
 
+  // Local name/bio/skill search within the current page
   filteredMentors = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
     if (!term) return this.mentors();
@@ -67,14 +89,11 @@ export class FindMentorsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.skillService.getAll().subscribe({
-      next: skills => this.skills.set(skills),
-      error: () => {},
-    });
+    this.skillService.getAll().subscribe({ next: skills => this.skills.set(skills) });
     this.loadMentors();
   }
 
-  loadMentors() {
+  loadMentors(page = this.currentPage()) {
     this.loading.set(true);
     this.apiError.set('');
 
@@ -83,26 +102,35 @@ export class FindMentorsComponent implements OnInit {
     if (this.minRating())       f.minRating = this.minRating()!;
     if (this.maxRate())         f.maxRate   = this.maxRate()!;
 
-    this.mentorService.getAll(f).subscribe({
-      next: (data: any) => {
-        const list: MentorResponse[] = Array.isArray(data) ? data : (data?.content ?? []);
-        this.mentors.set(list);
+    this.mentorService.getAll(f, page, this.pageSize).subscribe({
+      next: data => {
+        this.mentors.set(data.content);
+        this.currentPage.set(data.number);
+        this.totalPages.set(data.totalPages);
+        this.totalElements.set(data.totalElements);
         this.loading.set(false);
-        const ids = list.map(m => m.userId);
+        const ids = data.content.map(m => m.userId);
         if (ids.length) {
           this.userLookup.batchFetch(ids).subscribe(map => this.userMap.set(map));
         }
       },
-      error: (err) => {
+      error: err => {
         this.apiError.set(err?.error?.message || err?.message || 'Failed to load mentors.');
         this.loading.set(false);
       },
     });
   }
 
+  goToPage(page: number | '...') {
+    if (page === '...') return;
+    if (page < 0 || page >= this.totalPages()) return;
+    this.loadMentors(page);
+  }
+
   applyFilters() {
     this.filtersOpen.set(false);
-    this.loadMentors();
+    this.currentPage.set(0);
+    this.loadMentors(0);
   }
 
   clearFilters() {
@@ -112,20 +140,26 @@ export class FindMentorsComponent implements OnInit {
     this.searchTerm.set('');
     this.filters.set({ sortBy: 'rating' });
     this.filtersOpen.set(false);
-    this.loadMentors();
+    this.currentPage.set(0);
+    this.loadMentors(0);
   }
 
   removeFilter(type: 'skill' | 'rating' | 'rate') {
     if (type === 'skill')  this.selectedSkillId.set(null);
     if (type === 'rating') this.minRating.set(null);
     if (type === 'rate')   this.maxRate.set(null);
-    this.loadMentors();
+    this.currentPage.set(0);
+    this.loadMentors(0);
   }
 
   updateSort(value: string) {
-    this.filters.update(f => ({ ...f, sortBy: value as any }));
-    this.loadMentors();
+    this.filters.update(f => ({ ...f, sortBy: value }));
+    this.currentPage.set(0);
+    this.loadMentors(0);
   }
+
+  get rangeStart() { return this.currentPage() * this.pageSize + 1; }
+  get rangeEnd()   { return Math.min((this.currentPage() + 1) * this.pageSize, this.totalElements()); }
 
   skillName(id: number): string {
     return this.skills().find(s => s.id === id)?.name ?? `Skill #${id}`;

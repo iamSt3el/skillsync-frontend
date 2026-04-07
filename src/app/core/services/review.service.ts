@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
+import { environment } from 'src/environments/environment';
 
 export interface ReviewResponseDTO {
   id: number;
@@ -14,7 +15,7 @@ export interface ReviewResponseDTO {
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
   private http = inject(HttpClient);
-  private baseUrl = 'https://skillsync.mooo.com/api';
+  private baseUrl = environment.apiUrl;
 
   getForMentor(mentorId: number): Observable<ReviewResponseDTO[]> {
     return this.http.get<ReviewResponseDTO[]>(`${this.baseUrl}/reviews/mentor/${mentorId}`);

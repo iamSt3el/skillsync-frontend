@@ -102,5 +102,8 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/sessions/book-session/book-session.component').then(m => m.BookSessionComponent),
   },
-  { path: '**', redirectTo: '', pathMatch: 'full' },
+  {
+    path: '**',
+    loadComponent: () => import('./features/error/not-found.component').then(m => m.NotFoundComponent),
+  },
 ];

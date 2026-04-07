@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
 import { UserDTO } from '../auth/auth.model';
-import { MentorResponse } from './mentor.service';
+import { MentorResponse, Page } from './mentor.service';
 import { catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { SkillResponse } from './skill.service';
@@ -10,16 +11,17 @@ import { SkillResponse } from './skill.service';
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private http = inject(HttpClient);
-  private base = 'https://skillsync.mooo.com/api';
+  private base = environment.apiUrl;
 
-  getAllUsers(): Observable<UserDTO[]> {
-    return this.http.get<UserDTO[]>(`${this.base}/admin/users`);
+  getAllUsers(page = 0, size = 20): Observable<Page<UserDTO>> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.get<Page<UserDTO>>(`${this.base}/admin/users`, { params });
   }
 
-  /** Try admin endpoint first; fall back to public mentors list. */
-  getAllMentors(): Observable<MentorResponse[]> {
-    return this.http.get<MentorResponse[]>(`${this.base}/admin/mentors`).pipe(
-      catchError(() => this.http.get<MentorResponse[]>(`${this.base}/mentors`))
+  getAllMentors(page = 0, size = 15): Observable<Page<MentorResponse>> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.get<Page<MentorResponse>>(`${this.base}/admin/mentors`, { params }).pipe(
+      catchError(() => this.http.get<Page<MentorResponse>>(`${this.base}/mentors`, { params }))
     );
   }
 

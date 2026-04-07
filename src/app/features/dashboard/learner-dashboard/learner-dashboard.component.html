@@ -95,51 +95,66 @@
     } @else {
       <div class="mentors-grid">
         @for (m of mentors(); track m.id) {
-          <mat-card class="mentor-card" appearance="outlined">
-            
-            <div class="card-top">
-              <div class="mentor-avatar" [style.background]="mentorColor(m)">
-                {{ mentorInitials(m) }}
-              </div>
-              <div class="mentor-info">
-                <div class="mentor-name">{{ mentorName(m) }}</div>
-                <div class="mentor-exp">
-                  <mat-icon>work_outline</mat-icon>
-                  {{ m.experience }} yrs experience
-                </div>
+          <div class="mentor-card">
+
+            <!-- Avatar + badge -->
+            <div class="card-header">
+              @if (userMap().get(m.userId)?.profilePictureUrl) {
+                <img class="mentor-avatar mentor-avatar--img"
+                     [src]="userMap().get(m.userId)!.profilePictureUrl!"
+                     [alt]="mentorName(m)" />
+              } @else {
+                <div class="mentor-avatar" [style.background]="mentorColor(m)">{{ mentorInitials(m) }}</div>
+              }
+              <span class="available-badge">
+                <span class="avail-dot"></span> Available
+              </span>
+            </div>
+
+            <!-- Name + meta -->
+            <div class="mentor-meta">
+              <h3 class="mentor-name">{{ mentorName(m) }}</h3>
+              <div class="mentor-exp">
+                <mat-icon>work_outline</mat-icon>
+                {{ m.experience }} yrs experience
               </div>
             </div>
 
+            <!-- Rating -->
             <div class="mentor-rating">
-              <div class="stars-container">
+              <div class="stars">
                 @for (filled of stars(m.rating); track $index) {
                   <mat-icon class="star" [class.star--filled]="filled">star</mat-icon>
                 }
               </div>
-              <span class="rating-value">{{ m.rating | number:'1.1-1' }}</span>
-              <span class="rating-reviews">({{ m.reviewCount }} reviews)</span>
+              <span class="rating-val">{{ m.rating | number:'1.1-1' }}</span>
+              <span class="rating-count">({{ m.reviewCount }})</span>
             </div>
 
-            <div class="card-bottom">
-              <div class="skill-chips">
-                @for (skill of m.skills; track skill) {
-                  <span class="chip">{{ skill }}</span>
-                }
-              </div>
+            <!-- Bio -->
+            <p class="mentor-bio">{{ m.bio || 'Expert mentor ready to help you grow.' }}</p>
 
-              <div class="mentor-footer">
-                <div class="mentor-rate-badge">
-                  &#x20B9;{{ m.hourlyRate | number:'1.0-0' }}<span>/hr</span>
-                </div>
-                <button mat-flat-button 
-                        color="primary"
-                        class="book-btn"
-                        [routerLink]="['/book-session', m.userId]"
-                        >Book Session</button>
-              </div>
+            <!-- Skill chips -->
+            <div class="skill-chips">
+              @for (skill of (m.skills | slice:0:4); track skill) {
+                <span class="skill-chip">{{ skill }}</span>
+              }
+              @if (m.skills.length > 4) {
+                <span class="skill-chip skill-chip--more">+{{ m.skills.length - 4 }}</span>
+              }
             </div>
 
-          </mat-card>
+            <!-- Rate + action -->
+            <div class="card-footer">
+              <div class="rate-block">
+                <span class="rate-amount">&#x20B9;{{ m.hourlyRate | number:'1.0-0' }}</span>
+                <span class="rate-label">/hr</span>
+              </div>
+              <button mat-flat-button color="primary" class="book-btn"
+                      [routerLink]="['/book-session', m.id]">Book Session</button>
+            </div>
+
+          </div>
         }
       </div>
     }

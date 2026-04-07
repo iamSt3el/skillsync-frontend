@@ -9,6 +9,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-settings',
@@ -59,7 +60,7 @@ export class SettingsComponent {
     this.pwdError.set('');
     this.pwdSuccess.set(false);
     const { currentPassword, newPassword } = this.pwdForm.value;
-    this.http.put('https://skillsync.mooo.com/api/auth/change-password', { currentPassword, newPassword }).subscribe({
+    this.http.put(`${environment.apiUrl}/auth/change-password`, { currentPassword, newPassword }).subscribe({
       next: () => {
         this.pwdSaving.set(false);
         this.pwdSuccess.set(true);
@@ -79,7 +80,7 @@ export class SettingsComponent {
   deleteAccount() {
     if (this.deleteConfirmText() !== 'DELETE') return;
     this.deleteError.set('');
-    this.http.delete('https://skillsync.mooo.com/api/users/me').subscribe({
+    this.http.delete(`${environment.apiUrl}/users/me`).subscribe({
       next: () => this.authService.logout(),
       error: (err) => this.deleteError.set(err?.error?.message || 'Failed to delete account.'),
     });

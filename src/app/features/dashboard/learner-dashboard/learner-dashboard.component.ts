@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe, SlicePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -119,10 +119,9 @@ export class LearnerDashboardComponent implements OnInit {
       error: () => this.loadingSessions.set(false),
     });
 
-    this.mentorService.getAll({ sortBy: 'rating' }).subscribe({
-      next: (data: any) => {
-        const list: MentorResponse[] = Array.isArray(data) ? data : (data?.content ?? []);
-        const top = list.filter(m => m.status === 'ACTIVE').slice(0, 3);
+    this.mentorService.getAll({ sortBy: 'rating' }, 0, 3).subscribe({
+      next: (data) => {
+        const top = data.content.filter(m => m.status === 'ACTIVE');
         this.mentors.set(top);
         this.loadingMentors.set(false);
         const ids = top.map(m => m.userId);

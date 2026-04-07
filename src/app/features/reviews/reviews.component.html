@@ -118,11 +118,17 @@
           <mat-card class="review-card" appearance="outlined">
             
             <div class="review-top">
-              <div class="reviewer-avatar" [style.background]="learnerColor(r.userId)">
-                {{ learnerInitials(r.userId) }}
-              </div>
+              @if (reviewerPicture(r.userId)) {
+                <img class="reviewer-avatar reviewer-avatar--img"
+                     [src]="reviewerPicture(r.userId)!"
+                     [alt]="reviewerName(r.userId)" />
+              } @else {
+                <div class="reviewer-avatar" [style.background]="learnerColor(r.userId)">
+                  {{ reviewerInitials(r.userId) }}
+                </div>
+              }
               <div class="reviewer-info">
-                <div class="reviewer-name">Learner #{{ r.userId }}</div>
+                <div class="reviewer-name">{{ reviewerName(r.userId) }}</div>
                 <div class="review-date">{{ formatDate(r.createdAt) }}</div>
               </div>
             </div>

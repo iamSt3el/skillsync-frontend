@@ -145,11 +145,17 @@
         @for (r of reviews(); track r.id) {
           <div class="review-card">
             <div class="review-header">
-              <div class="mini-avatar" [style.background]="learnerColor(r.userId)">
-                {{ learnerInitials(r.userId) }}
-              </div>
+              @if (reviewerPicture(r.userId)) {
+                <img class="mini-avatar mini-avatar--img"
+                     [src]="reviewerPicture(r.userId)!"
+                     [alt]="reviewerName(r.userId)" />
+              } @else {
+                <div class="mini-avatar" [style.background]="learnerColor(r.userId)">
+                  {{ reviewerInitials(r.userId) }}
+                </div>
+              }
               <div class="review-meta">
-                <span class="reviewer-name">User #{{ r.userId }}</span>
+                <span class="reviewer-name">{{ reviewerName(r.userId) }}</span>
                 <span class="review-date">{{ formatDate(r.createdAt) }}</span>
               </div>
             </div>

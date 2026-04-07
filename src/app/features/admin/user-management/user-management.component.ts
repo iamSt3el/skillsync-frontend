@@ -29,8 +29,30 @@ export class UserManagementComponent implements OnInit {
   loading = signal(true);
   error   = signal(false);
 
-  searchQuery  = signal('');
-  roleFilter   = signal<string>('ALL');
+  // Pagination
+  currentPage   = signal(0);
+  totalPages    = signal(0);
+  totalElements = signal(0);
+  readonly pageSize = 20;
+
+  pageNumbers = computed(() => {
+    const total = this.totalPages();
+    const cur   = this.currentPage();
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+    const pages: (number | '...')[] = [];
+    if (cur <= 3) {
+      pages.push(0, 1, 2, 3, 4, '...', total - 1);
+    } else if (cur >= total - 4) {
+      pages.push(0, '...', total - 5, total - 4, total - 3, total - 2, total - 1);
+    } else {
+      pages.push(0, '...', cur - 1, cur, cur + 1, '...', total - 1);
+    }
+    return pages;
+  });
+
+  // Local filter on current page
+  searchQuery = signal('');
+  roleFilter  = signal<string>('ALL');
 
   filteredUsers = computed(() => {
     const q    = this.searchQuery().toLowerCase().trim();
@@ -46,11 +68,32 @@ export class UserManagementComponent implements OnInit {
     });
   });
 
+  get rangeStart() { return this.currentPage() * this.pageSize + 1; }
+  get rangeEnd()   { return Math.min((this.currentPage() + 1) * this.pageSize, this.totalElements()); }
+
   ngOnInit() {
-    this.adminService.getAllUsers().subscribe({
-      next: data => { this.users.set(data); this.loading.set(false); },
+    this.loadPage(0);
+  }
+
+  loadPage(page: number) {
+    this.loading.set(true);
+    this.error.set(false);
+    this.adminService.getAllUsers(page, this.pageSize).subscribe({
+      next: data => {
+        this.users.set(data.content);
+        this.currentPage.set(data.number);
+        this.totalPages.set(data.totalPages);
+        this.totalElements.set(data.totalElements);
+        this.loading.set(false);
+      },
       error: () => { this.error.set(true); this.loading.set(false); },
     });
+  }
+
+  goToPage(page: number | '...') {
+    if (page === '...') return;
+    if (page < 0 || page >= this.totalPages()) return;
+    this.loadPage(page);
   }
 
   roleColor(role: string): string {
