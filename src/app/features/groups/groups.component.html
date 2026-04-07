@@ -1,38 +1,54 @@
+<!-- ══ LIST VIEW ══════════════════════════════════════ -->
+@if (view() === 'list') {
 <div class="page">
 
   <header class="page-header">
-    <div class="header-text">
+    <div>
       <h1 class="page-title">Learning Groups</h1>
-      <p class="page-sub">Join communities, share knowledge, and grow together</p>
+      <p class="page-sub">Join peer communities and learn together</p>
     </div>
-    <button mat-flat-button color="primary" class="create-btn" (click)="openCreateDialog()">
-      <mat-icon>add</mat-icon> New Group
+    <button mat-flat-button class="create-btn" (click)="openCreateDialog()">
+      + Create New Group
     </button>
   </header>
 
-  <div class="toolbar">
-    <div class="pill-nav">
-      <button class="pill" [class.active]="activeTab() === 'all'" (click)="setTab('all')">
-        <mat-icon>explore</mat-icon> Discover
-      </button>
-      <button class="pill" [class.active]="activeTab() === 'joined'" (click)="setTab('joined')">
-        <mat-icon>bookmark</mat-icon> My Groups
-      </button>
-      <button class="pill" [class.active]="activeTab() === 'created'" (click)="setTab('created')">
-        <mat-icon>edit_note</mat-icon> Created
-      </button>
-    </div>
-
-    <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
-      <mat-icon matPrefix>search</mat-icon>
-      <input matInput placeholder="Search groups..."
-        [value]="searchTerm()"
-        (input)="searchTerm.set($any($event.target).value)" />
-    </mat-form-field>
+  <!-- Search -->
+  <div class="search-bar">
+    <mat-icon class="search-bar-icon">search</mat-icon>
+    <input class="search-bar-input" placeholder="Search groups by topic, skill…"
+      [value]="searchTerm()"
+      (input)="searchTerm.set($any($event.target).value)" />
   </div>
 
+  <!-- Tabs -->
+  <div class="tab-row">
+    <button class="tab" [class.active]="activeTab() === 'all'"     (click)="setTab('all')">All Groups</button>
+    <button class="tab" [class.active]="activeTab() === 'joined'"  (click)="setTab('joined')">My Groups</button>
+    <button class="tab" [class.active]="activeTab() === 'created'" (click)="setTab('created')">Created</button>
+  </div>
+
+  <!-- States -->
   @if (loading()) {
-    <div class="center-spinner"><mat-spinner diameter="40"></mat-spinner></div>
+    <div class="cards-list">
+      @for (_ of [1,2,3,4]; track _) {
+        <div class="group-card">
+          <div class="gc-icon" style="background:#f1f5f9">
+            <app-skeleton width="40px" height="40px" borderRadius="10px"></app-skeleton>
+          </div>
+          <div class="gc-body">
+            <div class="gc-top" style="display:flex;flex-direction:column;gap:8px;margin-bottom:0.75rem">
+              <app-skeleton height="18px" width="50%" borderRadius="4px"></app-skeleton>
+              <app-skeleton height="13px" width="35%" borderRadius="4px"></app-skeleton>
+            </div>
+            <app-skeleton height="13px" width="80%" borderRadius="4px"></app-skeleton>
+          </div>
+          <div class="gc-right">
+            <app-skeleton height="40px" width="40px" borderRadius="8px"></app-skeleton>
+            <app-skeleton height="36px" width="90px" borderRadius="6px" style="margin-top:0.5rem"></app-skeleton>
+          </div>
+        </div>
+      }
+    </div>
   } @else if (filtered().length === 0) {
     <div class="empty-state">
       <div class="empty-icon-box"><mat-icon>groups_3</mat-icon></div>
@@ -42,50 +58,64 @@
         @else if (activeTab() === 'created') { You haven't created any groups yet. }
         @else { Be the first to create a community! }
       </p>
-      @if (activeTab() !== 'joined') {
-        <button mat-flat-button color="primary" (click)="openCreateDialog()">
-          <mat-icon>add</mat-icon> Create a Group
-        </button>
-      }
+      <button mat-flat-button class="create-btn" (click)="openCreateDialog()">
+        + Create a Group
+      </button>
     </div>
   } @else {
-    <div class="groups-grid">
+    <div class="cards-list">
       @for (g of filtered(); track g.id) {
-        <div class="group-card">
+        <div class="group-card" (click)="openChat(g)">
 
-          <div class="card-color-bar" [style.background]="avatarColor(g.id)"></div>
+          <!-- Left: icon -->
+          <div class="gc-icon" [style.background]="avatarColor(g.id) + '22'" [style.color]="avatarColor(g.id)">
+            {{ groupInitials(g.name) }}
+          </div>
 
-          <div class="card-body">
-            <div class="card-top-row">
-              <div class="group-avatar" [style.background]="avatarColor(g.id)">
-                {{ groupInitials(g.name) }}
-              </div>
-              <div class="group-badges">
-                @if (isJoined(g.id)) {
-                  <span class="badge badge--joined">
-                    <mat-icon>check_circle</mat-icon> Member
-                  </span>
-                }
-                @if (g.createdBy === user.id) {
-                  <span class="badge badge--creator">
-                    <mat-icon>star</mat-icon> Creator
-                  </span>
-                }
+          <!-- Center: info -->
+          <div class="gc-body">
+            <div class="gc-top">
+              <h3 class="gc-name">{{ g.name }}</h3>
+              <div class="gc-meta-line">
+                <mat-icon class="gc-meta-icon">group</mat-icon>
+                {{ memberCount(g) }} members &nbsp;·&nbsp; Created by {{ creatorName(g) }}
               </div>
             </div>
 
-            <h3 class="group-name">{{ g.name }}</h3>
-            <p class="group-desc">{{ g.description || 'No description provided.' }}</p>
+            <p class="gc-desc">{{ g.description || 'No description provided.' }}</p>
+
+            <div class="gc-footer">
+              <span class="gc-active">
+                <span class="active-dot"></span>
+                Active {{ timeAgo(g.createdAt) }}
+              </span>
+              <span class="gc-sep">·</span>
+              <mat-icon class="gc-footer-icon">chat_bubble_outline</mat-icon>
+              <span>Group Chat</span>
+              <span class="gc-sep">·</span>
+              <mat-icon class="gc-footer-icon">public</mat-icon>
+              <span>Public Group</span>
+            </div>
           </div>
 
-          <div class="card-footer">
-            @if (isJoined(g.id)) {
-              <button mat-stroked-button class="leave-btn" (click)="leave(g.id)">
-                <mat-icon>logout</mat-icon> Leave
+          <!-- Right: count + action -->
+          <div class="gc-right" (click)="$event.stopPropagation()">
+            <div class="gc-count">
+              <span class="gc-count-num">{{ memberCount(g) }}</span>
+              <span class="gc-count-label">Members</span>
+            </div>
+
+            @if (g.createdBy === user.id) {
+              <button mat-flat-button class="btn-joined" disabled>
+                <mat-icon>star</mat-icon> Creator
+              </button>
+            } @else if (isJoined(g.id)) {
+              <button mat-stroked-button class="btn-joined" (click)="leave(g.id)">
+                ✓ Joined
               </button>
             } @else {
-              <button mat-flat-button color="primary" class="join-btn" (click)="join(g.id)">
-                <mat-icon>add</mat-icon> Join Group
+              <button mat-flat-button class="btn-join" (click)="join(g.id)">
+                + Join Group
               </button>
             }
           </div>
@@ -96,3 +126,92 @@
   }
 
 </div>
+}
+
+<!-- ══ CHAT VIEW ══════════════════════════════════════ -->
+@if (view() === 'chat') {
+<div class="chat-shell">
+
+  <!-- Left sidebar -->
+  <aside class="groups-sidebar">
+    <div class="sidebar-header">
+      <button mat-icon-button class="back-btn" (click)="backToList()" title="Back to groups">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h2 class="sidebar-title">Groups</h2>
+    </div>
+
+    <div class="sidebar-search">
+      <div class="search-wrap">
+        <mat-icon class="s-icon">search</mat-icon>
+        <input class="s-input" placeholder="Search…"
+          [value]="searchTerm()"
+          (input)="searchTerm.set($any($event.target).value)" />
+      </div>
+    </div>
+
+    <div class="sidebar-list">
+      @for (g of filtered(); track g.id) {
+        <div class="group-item" [class.active]="selectedGroup()?.id === g.id" (click)="openChat(g)">
+          <div class="gi-avatar" [style.background]="avatarColor(g.id)">{{ groupInitials(g.name) }}</div>
+          <div class="gi-info">
+            <span class="gi-name">{{ g.name }}</span>
+            <span class="gi-sub">{{ memberCount(g) }} members</span>
+          </div>
+          @if (g.createdBy === user.id) {
+            <span class="gi-pill gi-pill--creator">Creator</span>
+          } @else if (isJoined(g.id)) {
+            <span class="gi-pill gi-pill--member">Member</span>
+          }
+        </div>
+      }
+    </div>
+  </aside>
+
+  <!-- Right: chat -->
+  <main class="chat-main">
+    @if (selectedGroup()) {
+      <div class="chat-area">
+
+        <!-- Top bar -->
+        <div class="chat-top-bar">
+          <div class="ctb-left">
+            <div class="ctb-avatar" [style.background]="avatarColor(selectedGroup()!.id)">
+              {{ groupInitials(selectedGroup()!.name) }}
+            </div>
+            <div>
+              <h3 class="ctb-name">{{ selectedGroup()!.name }}</h3>
+              <span class="ctb-sub">{{ memberCount(selectedGroup()!) }} members</span>
+            </div>
+          </div>
+          <div class="ctb-actions">
+            @if (selectedGroup()!.createdBy !== user.id) {
+              @if (isJoined(selectedGroup()!.id)) {
+                <button mat-stroked-button class="leave-btn" (click)="leave(selectedGroup()!.id)">
+                  <mat-icon>logout</mat-icon> Leave
+                </button>
+              } @else {
+                <button mat-flat-button class="join-btn-chat" (click)="join(selectedGroup()!.id)">
+                  <mat-icon>add</mat-icon> Join Group
+                </button>
+              }
+            }
+          </div>
+        </div>
+
+        <!-- Chat body -->
+        @if (canChat(selectedGroup()!)) {
+          <app-group-chat [group]="selectedGroup()!" />
+        } @else {
+          <div class="join-prompt">
+            <mat-icon>lock_outline</mat-icon>
+            <p>Join this group to participate in the chat.</p>
+          </div>
+        }
+
+      </div>
+    }
+  </main>
+
+</div>
+}

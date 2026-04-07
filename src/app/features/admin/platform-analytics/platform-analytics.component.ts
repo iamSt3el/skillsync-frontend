@@ -2,7 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SkeletonComponent } from 'src/app/shared/skeleton/skeleton.component';
 import { AdminService } from 'src/app/core/services/admin.service';
 import { UserDTO } from 'src/app/core/auth/auth.model';
 import { MentorResponse } from 'src/app/core/services/mentor.service';
@@ -10,7 +10,7 @@ import { MentorResponse } from 'src/app/core/services/mentor.service';
 @Component({
   selector: 'app-platform-analytics',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [CommonModule, MatCardModule, MatIconModule, SkeletonComponent],
   templateUrl: './platform-analytics.component.html',
   styleUrl: './platform-analytics.component.scss',
 })

@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { forkJoin, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
@@ -8,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { MentorResponse, MentorService } from 'src/app/core/services/mentor.service';
 import { SessionResponse, SessionService } from 'src/app/core/services/session.service';
+import { UserBasic, UserLookupService } from 'src/app/core/services/user-lookup.service';
 import { MentorApplicationDialogComponent } from '../components/mentor-application-dialog/mentor-application-dialog.component';
 import { RouterLink } from '@angular/router';
 
@@ -23,23 +26,26 @@ import { RouterLink } from '@angular/router';
     RouterLink
   ],
   templateUrl: './learner-dashboard.component.html',
-  styleUrls: ['./learner-dashboard.component.scss'],  // ← fix: styleUrl → styleUrls
+  styleUrls: ['./learner-dashboard.component.scss'],
 })
 export class LearnerDashboardComponent implements OnInit {
   private authService    = inject(AuthService);
   private mentorService  = inject(MentorService);
   private sessionService = inject(SessionService);
+  private userLookup     = inject(UserLookupService);
   private dialog = inject(MatDialog);
 
   get user() { return this.authService.currentUser!; }
 
   // ── Reactive state via Signals ──
-  sessions       = signal<SessionResponse[]>([]);
-  mentors        = signal<MentorResponse[]>([]);
-  loadingSessions = signal(true);
-  loadingMentors  = signal(true);
+  sessions            = signal<SessionResponse[]>([]);
+  mentors             = signal<MentorResponse[]>([]);
+  userMap             = signal(new Map<number, UserBasic>());
+  // mentorId (mentor-service profile ID) → display name
+  sessionMentorNames  = signal(new Map<number, string>());
+  loadingSessions     = signal(true);
+  loadingMentors      = signal(true);
 
-  // ── Computed values (auto-update when signals change) ──
   firstName = computed(() => {
     return this.user?.name?.split(' ')[0] ?? this.user?.username ?? 'Learner';
   });
@@ -49,6 +55,8 @@ export class LearnerDashboardComponent implements OnInit {
     return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
   });
 
+  // REQUESTED = payment confirmed, awaiting mentor acceptance. ACCEPTED = mentor confirmed.
+  // Both are real upcoming sessions (payment is done for both). PENDING_PAYMENT is not yet confirmed.
   upcomingSessions = computed(() =>
     this.sessions().filter(s => s.status === 'REQUESTED' || s.status === 'ACCEPTED')
   );
@@ -85,27 +93,61 @@ export class LearnerDashboardComponent implements OnInit {
 
   // ── Data fetching ──
   ngOnInit() {
-    this.sessionService.getUserSessions(this.user.id).subscribe({
-      next: data => {
-        this.sessions.set(data);             // ← signal.set() triggers re-render
+    this.sessionService.getUserSessions(this.user.id).pipe(
+      switchMap(data => {
+        this.sessions.set(data);
         this.loadingSessions.set(false);
-      },
+        const uniqueMentorIds = [...new Set(data.map(s => s.mentorId))];
+        if (!uniqueMentorIds.length) return of([]);
+        return forkJoin(uniqueMentorIds.map(id => this.mentorService.getById(id)));
+      }),
+      switchMap((mentorProfiles: MentorResponse[]) => {
+        if (!mentorProfiles.length) return of(new Map<number, UserBasic>());
+        const userIds = mentorProfiles.map(m => m.userId);
+        return this.userLookup.batchFetch(userIds).pipe(
+          switchMap(userMapResult => {
+            const nameMap = new Map<number, string>();
+            mentorProfiles.forEach(m => {
+              nameMap.set(m.id, this.userLookup.displayName(userMapResult.get(m.userId)));
+            });
+            this.sessionMentorNames.set(nameMap);
+            return of(userMapResult);
+          })
+        );
+      })
+    ).subscribe({
       error: () => this.loadingSessions.set(false),
     });
 
     this.mentorService.getAll({ sortBy: 'rating' }).subscribe({
       next: (data: any) => {
         const list: MentorResponse[] = Array.isArray(data) ? data : (data?.content ?? []);
-        this.mentors.set(list.filter(m => m.status === 'ACTIVE').slice(0, 3));
+        const top = list.filter(m => m.status === 'ACTIVE').slice(0, 3);
+        this.mentors.set(top);
         this.loadingMentors.set(false);
+        const ids = top.map(m => m.userId);
+        if (ids.length) {
+          this.userLookup.batchFetch(ids).subscribe(map => this.userMap.set(map));
+        }
       },
       error: () => this.loadingMentors.set(false),
     });
   }
 
   // ── Helpers ──
+  mentorName(mentor: MentorResponse): string {
+    return this.userLookup.displayName(this.userMap().get(mentor.userId));
+  }
+
+  sessionMentorName(mentorId: number): string {
+    return this.sessionMentorNames().get(mentorId) ?? `Mentor #${mentorId}`;
+  }
+
   mentorInitials(mentor: MentorResponse): string {
-    return `M${mentor.id}`.slice(0, 2).toUpperCase();
+    const name = this.mentorName(mentor);
+    return name === 'Unknown'
+      ? `M${mentor.userId}`.slice(0, 2).toUpperCase()
+      : name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   }
 
   mentorColor(mentor: MentorResponse): string {

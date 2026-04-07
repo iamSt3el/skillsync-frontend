@@ -10,7 +10,7 @@ import { SkillResponse } from './skill.service';
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private http = inject(HttpClient);
-  private base = 'http://34.14.151.244/api';
+  private base = 'https://skillsync.mooo.com/api';
 
   getAllUsers(): Observable<UserDTO[]> {
     return this.http.get<UserDTO[]>(`${this.base}/admin/users`);
@@ -36,6 +36,18 @@ export class AdminService {
   }
 
   deleteSkill(skillId: number): Observable<unknown>{
-    return this.http.delete(`${this.base}/admin/skills/${skillId}`)
+    return this.http.delete(`${this.base}/admin/skills/${skillId}`);
+  }
+
+  getAllGroups(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/admin/groups`);
+  }
+
+  deactivateGroup(groupId: number): Observable<unknown> {
+    return this.http.put(`${this.base}/admin/groups/${groupId}/deactivate`, {});
+  }
+
+  deleteGroup(groupId: number): Observable<unknown> {
+    return this.http.delete(`${this.base}/admin/groups/${groupId}`);
   }
 }

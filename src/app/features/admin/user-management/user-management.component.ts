@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SkeletonComponent } from 'src/app/shared/skeleton/skeleton.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -16,7 +16,7 @@ import { UserDTO } from 'src/app/core/auth/auth.model';
   standalone: true,
   imports: [
     CommonModule, FormsModule,
-    MatCardModule, MatIconModule, MatProgressSpinnerModule,
+    MatCardModule, MatIconModule, SkeletonComponent,
     MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule,
   ],
   templateUrl: './user-management.component.html',

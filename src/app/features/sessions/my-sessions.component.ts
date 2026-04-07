@@ -2,16 +2,16 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SkeletonComponent } from 'src/app/shared/skeleton/skeleton.component';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { SessionResponse, SessionService, SessionStatus } from 'src/app/core/services/session.service';
 
-type FilterTab = 'all' | 'upcoming' | 'completed' | 'cancelled';
+type FilterTab = 'all' | 'upcoming' | 'pending' | 'completed' | 'cancelled';
 
 @Component({
   selector: 'app-my-sessions',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, SkeletonComponent],
   templateUrl: './my-sessions.component.html',
   styleUrls: ['./my-sessions.component.scss'],
 })
@@ -30,21 +30,29 @@ export class MySessionsComponent implements OnInit {
   filtered = computed(() => {
     const tab = this.activeTab();
     const all = this.sessions();
-    // When user is a mentor, only show sessions where they are the mentor (not old learner sessions)
     const base = this.isMentor
       ? all.filter(s => s.learnerId !== this.user.id)
       : all;
-    if (tab === 'upcoming')   return base.filter(s => s.status === 'REQUESTED' || s.status === 'ACCEPTED');
-    if (tab === 'completed')  return base.filter(s => s.status === 'COMPLETED');
-    if (tab === 'cancelled')  return base.filter(s => s.status === 'CANCELLED' || s.status === 'REJECTED');
+    // PENDING_PAYMENT = awaiting payment confirmation
+    // REQUESTED       = payment done, awaiting mentor acceptance
+    // ACCEPTED        = mentor confirmed, session is booked
+    if (tab === 'pending')   return base.filter(s => s.status === 'PENDING_PAYMENT');
+    if (tab === 'upcoming')  return base.filter(s => s.status === 'REQUESTED' || s.status === 'ACCEPTED');
+    if (tab === 'completed') return base.filter(s => s.status === 'COMPLETED');
+    if (tab === 'cancelled') return base.filter(s => s.status === 'CANCELLED' || s.status === 'REJECTED');
     return base;
   });
 
+  pendingCount = computed(() =>
+    this.sessions().filter(s => s.status === 'PENDING_PAYMENT').length
+  );
+
   tabs: { key: FilterTab; label: string }[] = [
-    { key: 'all',       label: 'All'       },
-    { key: 'upcoming',  label: 'Upcoming'  },
-    { key: 'completed', label: 'Completed' },
-    { key: 'cancelled', label: 'Cancelled' },
+    { key: 'all',       label: 'All'             },
+    { key: 'upcoming',  label: 'Upcoming'         },
+    { key: 'pending',   label: 'Pending Payment'  },
+    { key: 'completed', label: 'Completed'        },
+    { key: 'cancelled', label: 'Cancelled'        },
   ];
 
   ngOnInit() {
@@ -78,7 +86,7 @@ export class MySessionsComponent implements OnInit {
     });
   }
 
-  canCancel(s: SessionResponse)   { return this.isLearner && (s.status === 'REQUESTED' || s.status === 'ACCEPTED'); }
+  canCancel(s: SessionResponse)   { return this.isLearner && (s.status === 'PENDING_PAYMENT' || s.status === 'REQUESTED' || s.status === 'ACCEPTED'); }
   canAccept(s: SessionResponse)   { return this.isMentor  && s.status === 'REQUESTED'; }
   canReject(s: SessionResponse)   { return this.isMentor  && s.status === 'REQUESTED'; }
   canComplete(s: SessionResponse) { return this.isMentor  && s.status === 'ACCEPTED'; }
@@ -89,11 +97,12 @@ export class MySessionsComponent implements OnInit {
 
   statusClass(status: SessionStatus) {
     const map: Record<SessionStatus, string> = {
-      REQUESTED: 'badge--pending',
-      ACCEPTED:  'badge--accepted',
-      COMPLETED: 'badge--completed',
-      REJECTED:  'badge--rejected',
-      CANCELLED: 'badge--cancelled',
+      PENDING_PAYMENT: 'badge--pending',
+      REQUESTED:       'badge--requested',
+      ACCEPTED:        'badge--accepted',
+      COMPLETED:       'badge--completed',
+      REJECTED:        'badge--rejected',
+      CANCELLED:       'badge--cancelled',
     };
     return map[status] ?? '';
   }

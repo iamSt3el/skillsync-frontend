@@ -6,7 +6,22 @@
   </header>
 
   @if (loading()) {
-    <div class="center-spinner"><mat-spinner diameter="40"></mat-spinner></div>
+    <div class="sessions-list">
+      @for (_ of [1,2,3]; track _) {
+        <div class="session-card">
+          <div class="session-row">
+            <div class="session-info" style="display:flex;align-items:center;gap:1rem">
+              <app-skeleton width="36px" height="36px" borderRadius="50%"></app-skeleton>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <app-skeleton height="16px" width="120px" borderRadius="4px"></app-skeleton>
+                <app-skeleton height="13px" width="180px" borderRadius="4px"></app-skeleton>
+              </div>
+            </div>
+            <app-skeleton height="34px" width="110px" borderRadius="6px"></app-skeleton>
+          </div>
+        </div>
+      }
+    </div>
 
   } @else if (isLearner) {
 

@@ -116,6 +116,14 @@
   justify-content: center;
   box-shadow: 0 4px 16px rgba(221, 0, 49, 0.35);
   border: 3px solid rgba(255,255,255,0.15);
+  overflow: hidden;
+}
+
+.hero-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .hero-avatar-label {

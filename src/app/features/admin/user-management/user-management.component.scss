@@ -63,8 +63,12 @@ khost { display: block; }
   flex-wrap: wrap;
 }
 
-.search-field { flex: 1; min-width: 260px; }
-.role-field   { width: 160px; }
+.search-field {
+  flex: 1;
+  min-width: 260px;
+  --mdc-outlined-text-field-container-shape: 10px;
+}
+.role-field { width: 160px; --mdc-outlined-text-field-container-shape: 10px; }
 
 .results-count {
   font-size: 0.825rem;

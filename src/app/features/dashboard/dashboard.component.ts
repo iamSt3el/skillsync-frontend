@@ -1,9 +1,10 @@
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { NotificationService } from 'src/app/core/services/notification.service';
+import { NotificationWebSocketService } from 'src/app/core/services/notification-websocket.service';
 import { SidebarComponent } from 'src/app/core/layout/sidebar/sidebar.component';
 import { GroupsComponent } from 'src/app/features/groups/groups.component';
 import { FindMentorsComponent } from 'src/app/features/mentors/find-mentors/find-mentors.component';
@@ -18,19 +19,23 @@ import { UserManagementComponent } from 'src/app/features/admin/user-management/
 import { MentorApprovalsComponent } from 'src/app/features/admin/mentor-approvals/mentor-approvals.component';
 import { PlatformAnalyticsComponent } from 'src/app/features/admin/platform-analytics/platform-analytics.component';
 import { SkillCatalogComponent } from '../admin/skill-catalog/skill-catalog.component';
+import { AdminGroupManagementComponent } from '../admin/admin-group-management/admin-group-management.component';
+import { SettingsComponent } from '../settings/settings.component';
 
 const PAGE_LABELS: Record<string, { label: string; icon: string }> = {
-  overview:         { label: 'Dashboard',       icon: 'dashboard' },
-  'find-mentors':   { label: 'Find Mentors',     icon: 'manage_search' },
-  sessions:         { label: 'My Sessions',      icon: 'event_note' },
-  groups:           { label: 'Learning Groups',  icon: 'groups' },
-  reviews:          { label: 'Reviews',          icon: 'rate_review' },
-  profile:          { label: 'My Profile',       icon: 'person' },
-  notifications:    { label: 'Notifications',    icon: 'notifications' },
-  'admin-users':    { label: 'User Management',  icon: 'manage_accounts' },
-  'admin-approvals':{ label: 'Mentor Approvals', icon: 'admin_panel_settings' },
-  'admin-analytics':{ label: 'Analytics',        icon: 'analytics' },
-  'skill-catalog':  { label: 'Skill Catalog',    icon: 'library_books' },
+  overview:         { label: 'Dashboard',        icon: 'dashboard' },
+  'find-mentors':   { label: 'Find Mentors',      icon: 'manage_search' },
+  sessions:         { label: 'My Sessions',       icon: 'event_note' },
+  groups:           { label: 'Learning Groups',   icon: 'groups' },
+  reviews:          { label: 'Reviews',           icon: 'rate_review' },
+  profile:          { label: 'My Profile',        icon: 'person' },
+  notifications:    { label: 'Notifications',     icon: 'notifications' },
+  settings:         { label: 'Settings',          icon: 'settings' },
+  'admin-users':    { label: 'User Management',   icon: 'manage_accounts' },
+  'admin-approvals':{ label: 'Mentor Approvals',  icon: 'admin_panel_settings' },
+  'admin-analytics':{ label: 'Analytics',         icon: 'analytics' },
+  'admin-groups':   { label: 'Group Management',  icon: 'groups' },
+  'skill-catalog':  { label: 'Skill Catalog',     icon: 'library_books' },
 };
 
 @Component({
@@ -55,16 +60,20 @@ const PAGE_LABELS: Record<string, { label: string; icon: string }> = {
     MentorApprovalsComponent,
     PlatformAnalyticsComponent,
     SkillCatalogComponent,
+    AdminGroupManagementComponent,
+    SettingsComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   authService          = inject(AuthService);
   private notifService = inject(NotificationService);
+  private wsService    = inject(NotificationWebSocketService);
 
   activePage = 'overview';
   unreadCount = signal(0);
+  mobileSidebarOpen = signal(false);
 
   userInitials = computed(() => {
     const u = this.authService.currentUser;
@@ -80,6 +89,7 @@ export class DashboardComponent implements OnInit {
     }
     const userId = this.authService.currentUser?.id;
     if (userId) {
+      // Load initial unread count from REST
       this.notifService.getForUser(userId).subscribe({
         next: (data: any) => {
           const list = Array.isArray(data) ? data : (data?.content ?? []);
@@ -87,12 +97,25 @@ export class DashboardComponent implements OnInit {
         },
         error: () => {},
       });
+
+      // Open WebSocket for real-time notifications
+      this.wsService.connect();
+      this.wsService.notifications$.subscribe(() => {
+        if (this.activePage !== 'notifications') {
+          this.unreadCount.update(c => c + 1);
+        }
+      });
     }
+  }
+
+  ngOnDestroy() {
+    this.wsService.disconnect();
   }
 
   navigateTo(page: string) {
     this.activePage = page;
     if (page === 'notifications') this.unreadCount.set(0);
+    this.mobileSidebarOpen.set(false);
   }
 
   get isLearner() { return this.authService.currentUser?.role?.toUpperCase().includes('LEARNER'); }

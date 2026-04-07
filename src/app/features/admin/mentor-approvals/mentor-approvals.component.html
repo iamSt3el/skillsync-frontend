@@ -30,7 +30,34 @@
   </header>
 
   @if (loading()) {
-    <div class="center-spinner"><mat-spinner diameter="40"></mat-spinner></div>
+    <div class="mentor-grid">
+      @for (_ of [1,2,3]; track _) {
+        <mat-card class="mentor-card" appearance="outlined">
+          <div class="card-header">
+            <app-skeleton width="48px" height="48px" borderRadius="12px"></app-skeleton>
+            <div class="mentor-meta" style="display:flex;flex-direction:column;gap:8px">
+              <app-skeleton height="16px" width="90px" borderRadius="4px"></app-skeleton>
+              <app-skeleton height="13px" width="70px" borderRadius="4px"></app-skeleton>
+            </div>
+            <app-skeleton height="22px" width="70px" borderRadius="999px"></app-skeleton>
+          </div>
+          <app-skeleton height="48px" width="100%" borderRadius="6px" style="margin:0.75rem 0"></app-skeleton>
+          <div class="mentor-details" style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem">
+            <app-skeleton height="14px" width="60%" borderRadius="4px"></app-skeleton>
+            <app-skeleton height="14px" width="50%" borderRadius="4px"></app-skeleton>
+          </div>
+          <div class="skill-chips" style="margin-bottom:1rem">
+            @for (_ of [1,2,3]; track _) {
+              <app-skeleton height="26px" width="70px" borderRadius="6px"></app-skeleton>
+            }
+          </div>
+          <div class="card-actions">
+            <app-skeleton height="36px" width="100px" borderRadius="4px"></app-skeleton>
+            <app-skeleton height="36px" width="90px" borderRadius="4px"></app-skeleton>
+          </div>
+        </mat-card>
+      }
+    </div>
   } @else if (error()) {
     <div class="empty-state">
       <div class="empty-icon-wrapper"><mat-icon>error_outline</mat-icon></div>

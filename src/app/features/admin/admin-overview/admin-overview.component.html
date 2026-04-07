@@ -23,7 +23,8 @@
           </div>
           <div class="stat-body">
             @if (loading()) {
-              <mat-spinner diameter="24"></mat-spinner>
+              <app-skeleton height="28px" width="56px" borderRadius="6px"></app-skeleton>
+              <app-skeleton height="13px" width="90px" borderRadius="4px" style="margin-top:8px"></app-skeleton>
             } @else {
               <span class="stat-value">{{ s.value }}</span>
               <span class="stat-label">{{ s.label }}</span>
@@ -40,7 +41,20 @@
     <section class="section">
       <h2 class="section-title">Recent Users</h2>
       @if (loading()) {
-        <div class="center-spinner"><mat-spinner diameter="36"></mat-spinner></div>
+        <mat-card appearance="outlined" class="table-card">
+          <div class="user-list">
+            @for (_ of [1,2,3,4,5]; track _) {
+              <div class="user-row">
+                <app-skeleton width="36px" height="36px" borderRadius="50%"></app-skeleton>
+                <div class="user-info" style="display:flex;flex-direction:column;gap:6px">
+                  <app-skeleton height="15px" width="100px" borderRadius="4px"></app-skeleton>
+                  <app-skeleton height="12px" width="150px" borderRadius="4px"></app-skeleton>
+                </div>
+                <app-skeleton height="22px" width="64px" borderRadius="999px"></app-skeleton>
+              </div>
+            }
+          </div>
+        </mat-card>
       } @else if (recentUsers().length === 0) {
         <div class="empty-state">
           <div class="empty-icon-wrapper"><mat-icon>group_off</mat-icon></div>
@@ -71,7 +85,15 @@
     <section class="section">
       <h2 class="section-title">User Distribution</h2>
       @if (loading()) {
-        <div class="center-spinner"><mat-spinner diameter="36"></mat-spinner></div>
+        <mat-card appearance="outlined" class="table-card dist-card">
+          @for (_ of [1,2,3,4]; track _) {
+            <div class="dist-item" style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
+              <app-skeleton height="14px" width="80px" borderRadius="4px"></app-skeleton>
+              <app-skeleton height="10px" width="100%" borderRadius="4px"></app-skeleton>
+              <app-skeleton height="14px" width="24px" borderRadius="4px"></app-skeleton>
+            </div>
+          }
+        </mat-card>
       } @else {
         <mat-card appearance="outlined" class="table-card dist-card">
           <div class="dist-item">

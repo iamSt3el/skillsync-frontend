@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://34.14.151.244/api/payments'; // Updated to your API IP
+  private baseUrl = 'https://skillsync.mooo.com/api/payments'; // Updated to your API IP
 
   initiatePayment(sessionId: number): Observable<any> {
     return this.http.post(`${this.baseUrl}/initiate`, { sessionId });
@@ -13,5 +13,9 @@ export class PaymentService {
 
   verifyPayment(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/verify`, data);
+  }
+
+  getMyPayments(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/my`);
   }
 }

@@ -1,97 +1,234 @@
 <div class="page">
 
+  <!-- ── Page Header ─────────────────────────────── -->
   <header class="page-header">
-    <h1 class="page-title">My Profile</h1>
-    <p class="page-sub">Manage your account information and preferences</p>
+    <div>
+      <h1 class="page-title">My Profile</h1>
+      <p class="page-sub">Manage your account information and preferences</p>
+    </div>
   </header>
 
   <div class="profile-layout">
 
-    <div class="avatar-card">
-      <div class="avatar">{{ userInitials }}</div>
-      <h2 class="avatar-name">{{ user.name || user.username }}</h2>
-      <div class="role-badge">{{ roleLabel }}</div>
-      <p class="join-date">Member since {{ joinedDate }}</p>
-    </div>
+    <!-- ── Left: Identity Card ─────────────────── -->
+    <aside class="identity-card">
 
-    <div class="info-card">
-
-      @if (success()) {
-        <div class="alert-banner banner-success">
-          <mat-icon>check_circle</mat-icon> Profile updated successfully.
-        </div>
-      }
-
-      @if (errorMsg()) {
-        <div class="alert-banner banner-error">
-          <mat-icon>error_outline</mat-icon> {{ errorMsg() }}
-        </div>
-      }
-
-      <div class="card-header">
-        <h3>{{ editing() ? 'Edit Profile' : 'Personal Information' }}</h3>
-        @if (!editing()) {
-          <button mat-stroked-button class="edit-btn" (click)="startEdit()">
-            <mat-icon>edit</mat-icon> Edit
-          </button>
+      <div class="avatar-wrap">
+        @if (user.profilePictureUrl) {
+          <img class="avatar-img" [src]="user.profilePictureUrl" [alt]="user.username" />
+        } @else {
+          <div class="avatar-initials">{{ userInitials }}</div>
         }
+        <label class="avatar-overlay" [class.uploading]="uploadingPic()">
+          @if (uploadingPic()) {
+            <mat-spinner diameter="26" class="upload-spinner"></mat-spinner>
+          } @else {
+            <mat-icon>photo_camera</mat-icon>
+            <span>Change</span>
+          }
+          <input type="file" accept="image/*" class="file-input" (change)="onFileSelected($event)" />
+        </label>
       </div>
 
-      @if (!editing()) {
-        <div class="info-grid">
-          <div class="info-row">
-            <span class="info-label">Username</span>
-            <span class="info-value">{{ user.username }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Full Name</span>
-            <span class="info-value">{{ user.name || '—' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Email Address</span>
-            <span class="info-value">{{ user.email }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Account Role</span>
-            <span class="info-value capitalize">{{ roleLabel }}</span>
-          </div>
+      @if (picError()) {
+        <p class="pic-error">{{ picError() }}</p>
+      }
+
+      <h2 class="id-name">{{ user.name || user.username }}</h2>
+      <p class="id-email">{{ user.email }}</p>
+
+      <div class="role-chip">
+        <mat-icon>{{ user.role.includes('MENTOR') ? 'school' : user.role.includes('ADMIN') ? 'admin_panel_settings' : 'person' }}</mat-icon>
+        {{ roleLabel }}
+      </div>
+
+      <div class="id-divider"></div>
+
+      <div class="id-stats">
+        <div class="id-stat">
+          <span class="id-stat-value">{{ payments().length }}</span>
+          <span class="id-stat-label">Payments</span>
         </div>
+        <div class="id-stat-sep"></div>
+        <div class="id-stat">
+          <span class="id-stat-value">{{ payments().filter(p => p.status === 'SUCCESS').length }}</span>
+          <span class="id-stat-label">Completed</span>
+        </div>
+        <div class="id-stat-sep"></div>
+        <div class="id-stat">
+          <span class="id-stat-value">{{ formatAmount(totalSpent, 'INR') }}</span>
+          <span class="id-stat-label">Total Spent</span>
+        </div>
+      </div>
 
-      } @else {
-        <form [formGroup]="form" (ngSubmit)="save()" class="edit-form">
-          
-          <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
-            <mat-label>Username</mat-label>
-            <input matInput formControlName="username" placeholder="Choose a unique username" />
-            @if (form.get('username')?.invalid && form.get('username')?.touched) {
-              <mat-error>Minimum 3 characters required</mat-error>
+      <div class="id-divider"></div>
+
+      <div class="id-meta">
+        <mat-icon>calendar_today</mat-icon>
+        <span>Joined {{ joinedDate }}</span>
+      </div>
+
+    </aside>
+
+    <!-- ── Right: Tab Content ──────────────────── -->
+    <div class="content-panel">
+
+      <!-- Tab Bar -->
+      <div class="tab-bar">
+        <button class="tab-btn" [class.active]="activeTab() === 'info'" (click)="activeTab.set('info')">
+          <mat-icon>person_outline</mat-icon> Personal Info
+        </button>
+        <button class="tab-btn" [class.active]="activeTab() === 'payments'" (click)="activeTab.set('payments')">
+          <mat-icon>receipt_long</mat-icon> Payment History
+          @if (payments().length > 0) {
+            <span class="tab-count">{{ payments().length }}</span>
+          }
+        </button>
+      </div>
+
+      <!-- ── Tab: Personal Info ──────────────── -->
+      @if (activeTab() === 'info') {
+        <div class="tab-body">
+
+          @if (success()) {
+            <div class="alert-banner banner-success">
+              <mat-icon>check_circle</mat-icon> Profile updated successfully.
+            </div>
+          }
+          @if (errorMsg()) {
+            <div class="alert-banner banner-error">
+              <mat-icon>error_outline</mat-icon> {{ errorMsg() }}
+            </div>
+          }
+
+          <div class="section-header">
+            <h3>Personal Information</h3>
+            @if (!editing()) {
+              <button mat-stroked-button class="edit-btn" (click)="startEdit()">
+                <mat-icon>edit</mat-icon> Edit
+              </button>
             }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
-            <mat-label>Full Name</mat-label>
-            <input matInput formControlName="name" placeholder="e.g. Jane Doe" />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
-            <mat-label>Email Address</mat-label>
-            <input matInput type="email" formControlName="email" placeholder="name@example.com" />
-            @if (form.get('email')?.invalid && form.get('email')?.touched) {
-              <mat-error>Please enter a valid email address</mat-error>
-            }
-          </mat-form-field>
-
-          <div class="form-actions">
-            <button mat-stroked-button type="button" class="cancel-btn" (click)="cancelEdit()">Cancel</button>
-            <button mat-flat-button color="primary" type="submit" class="submit-btn" [disabled]="saving() || form.invalid">
-              @if (saving()) { 
-                <mat-spinner diameter="20" class="btn-spinner"></mat-spinner> Saving... 
-              } @else { 
-                Save Changes 
-              }
-            </button>
           </div>
-        </form>
+
+          @if (!editing()) {
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="info-icon-wrap"><mat-icon>alternate_email</mat-icon></div>
+                <div class="info-body">
+                  <span class="info-label">Username</span>
+                  <span class="info-value">{{ user.username }}</span>
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-icon-wrap"><mat-icon>badge</mat-icon></div>
+                <div class="info-body">
+                  <span class="info-label">Full Name</span>
+                  <span class="info-value">{{ user.name || '—' }}</span>
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-icon-wrap"><mat-icon>mail_outline</mat-icon></div>
+                <div class="info-body">
+                  <span class="info-label">Email Address</span>
+                  <span class="info-value">{{ user.email }}</span>
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-icon-wrap"><mat-icon>verified_user</mat-icon></div>
+                <div class="info-body">
+                  <span class="info-label">Account Role</span>
+                  <span class="info-value">{{ roleLabel }}</span>
+                </div>
+              </div>
+            </div>
+
+          } @else {
+            <form [formGroup]="form" (ngSubmit)="save()" class="edit-form">
+              <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+                <mat-label>Username</mat-label>
+                <mat-icon matPrefix>alternate_email</mat-icon>
+                <input matInput formControlName="username" />
+                @if (form.get('username')?.invalid && form.get('username')?.touched) {
+                  <mat-error>Minimum 3 characters required</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+                <mat-label>Full Name</mat-label>
+                <mat-icon matPrefix>badge</mat-icon>
+                <input matInput formControlName="name" />
+              </mat-form-field>
+
+              <div class="form-actions">
+                <button mat-stroked-button type="button" (click)="cancelEdit()">Cancel</button>
+                <button mat-flat-button color="primary" type="submit" [disabled]="saving() || form.invalid">
+                  @if (saving()) { <mat-spinner diameter="18" class="btn-spinner"></mat-spinner> }
+                  {{ saving() ? 'Saving…' : 'Save Changes' }}
+                </button>
+              </div>
+            </form>
+          }
+
+        </div>
+      }
+
+      <!-- ── Tab: Payment History ────────────── -->
+      @if (activeTab() === 'payments') {
+        <div class="tab-body">
+
+          <div class="section-header">
+            <h3>Payment History</h3>
+            @if (payments().length > 0) {
+              <span class="total-spent-badge">
+                Total: {{ formatAmount(totalSpent, 'INR') }}
+              </span>
+            }
+          </div>
+
+          @if (loadingPayments()) {
+            <div class="payments-list">
+              @for (_ of [1,2,3]; track _) {
+                <div class="payment-row">
+                  <app-skeleton width="40px" height="40px" borderRadius="10px"></app-skeleton>
+                  <div class="payment-info" style="display:flex;flex-direction:column;gap:6px">
+                    <app-skeleton height="15px" width="100px" borderRadius="4px"></app-skeleton>
+                    <app-skeleton height="12px" width="140px" borderRadius="4px"></app-skeleton>
+                  </div>
+                  <app-skeleton height="14px" width="80px" borderRadius="4px"></app-skeleton>
+                  <app-skeleton height="16px" width="60px" borderRadius="4px"></app-skeleton>
+                  <app-skeleton height="24px" width="70px" borderRadius="999px"></app-skeleton>
+                </div>
+              }
+            </div>
+          } @else if (payments().length === 0) {
+            <div class="empty-payments">
+              <div class="empty-icon-box"><mat-icon>receipt_long</mat-icon></div>
+              <p>No payment history yet.</p>
+              <span>Your session payments will appear here.</span>
+            </div>
+          } @else {
+            <div class="payments-list">
+              @for (p of payments(); track p.id) {
+                <div class="payment-row">
+                  <div class="payment-icon" [class.payment-icon--success]="p.status === 'SUCCESS'"
+                       [class.payment-icon--failed]="p.status === 'FAILED'">
+                    <mat-icon>{{ p.status === 'SUCCESS' ? 'check_circle' : p.status === 'FAILED' ? 'cancel' : 'pending' }}</mat-icon>
+                  </div>
+                  <div class="payment-info">
+                    <span class="payment-title">Session #{{ p.sessionId }}</span>
+                    <span class="payment-id">{{ p.gatewayPaymentId || 'N/A' }}</span>
+                  </div>
+                  <div class="payment-date">{{ formatDate(p.createdAt) }}</div>
+                  <div class="payment-amount">{{ formatAmount(p.amount, p.currency) }}</div>
+                  <span class="payment-badge" [class]="paymentStatusClass(p.status)">
+                    {{ p.status }}
+                  </span>
+                </div>
+              }
+            </div>
+          }
+
+        </div>
       }
 
     </div>

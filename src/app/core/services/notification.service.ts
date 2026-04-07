@@ -14,7 +14,7 @@ export interface NotificationResponse {
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://34.14.151.244/api';
+  private baseUrl = 'https://skillsync.mooo.com/api';
 
   getForUser(userId: number): Observable<NotificationResponse[]> {
     return this.http.get<NotificationResponse[]>(`${this.baseUrl}/notifications/user/${userId}`);

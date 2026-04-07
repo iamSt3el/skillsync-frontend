@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SkeletonComponent } from 'src/app/shared/skeleton/skeleton.component';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { MentorResponse, MentorService } from 'src/app/core/services/mentor.service';
 import { ReviewResponseDTO, ReviewService } from 'src/app/core/services/review.service';
@@ -23,7 +24,8 @@ import { SessionResponse, SessionService } from 'src/app/core/services/session.s
     MatFormFieldModule,
     MatInputModule,
     MatProgressSpinnerModule,
-    MatCard
+    MatCard,
+    SkeletonComponent
   ],
   templateUrl: './reviews.component.html',
   styleUrls: ['./reviews.component.scss'],

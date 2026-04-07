@@ -41,6 +41,14 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(221, 0, 49, 0.25);
+  overflow: hidden;
+}
+
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 /* ── Stat Cards ───────────────────────────────────── */

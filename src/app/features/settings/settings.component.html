@@ -1,0 +1,156 @@
+<div class="page">
+
+  <header class="page-header">
+    <h1 class="page-title">Settings</h1>
+    <p class="page-sub">Manage your account security and preferences</p>
+  </header>
+
+  <div class="settings-layout">
+
+    <!-- ── Change Password ──────────────────────────── -->
+    <section class="settings-card">
+      <div class="card-header">
+        <div class="card-icon-wrap card-icon-wrap--blue">
+          <mat-icon>lock_outline</mat-icon>
+        </div>
+        <div>
+          <h2 class="card-title">Change Password</h2>
+          <p class="card-sub">Keep your account secure with a strong password</p>
+        </div>
+      </div>
+
+      @if (pwdSuccess()) {
+        <div class="alert-banner banner-success">
+          <mat-icon>check_circle</mat-icon> Password changed successfully.
+        </div>
+      }
+      @if (pwdError()) {
+        <div class="alert-banner banner-error">
+          <mat-icon>error_outline</mat-icon> {{ pwdError() }}
+        </div>
+      }
+
+      <form [formGroup]="pwdForm" (ngSubmit)="changePassword()" class="pwd-form">
+        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+          <mat-label>Current Password</mat-label>
+          <mat-icon matPrefix>lock</mat-icon>
+          <input matInput [type]="showCurrentPwd() ? 'text' : 'password'" formControlName="currentPassword" />
+          <button type="button" mat-icon-button matSuffix (click)="showCurrentPwd.set(!showCurrentPwd())">
+            <mat-icon>{{ showCurrentPwd() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+          <mat-label>New Password</mat-label>
+          <mat-icon matPrefix>lock_reset</mat-icon>
+          <input matInput [type]="showNewPwd() ? 'text' : 'password'" formControlName="newPassword" />
+          <button type="button" mat-icon-button matSuffix (click)="showNewPwd.set(!showNewPwd())">
+            <mat-icon>{{ showNewPwd() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (pwdForm.get('newPassword')?.invalid && pwdForm.get('newPassword')?.touched) {
+            <mat-error>Minimum 8 characters required</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+          <mat-label>Confirm New Password</mat-label>
+          <mat-icon matPrefix>lock_reset</mat-icon>
+          <input matInput [type]="showConfirmPwd() ? 'text' : 'password'" formControlName="confirmPassword" />
+          <button type="button" mat-icon-button matSuffix (click)="showConfirmPwd.set(!showConfirmPwd())">
+            <mat-icon>{{ showConfirmPwd() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (pwdForm.errors?.['mismatch'] && pwdForm.get('confirmPassword')?.touched) {
+            <mat-error>Passwords do not match</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-flat-button color="primary" type="submit"
+            [disabled]="pwdSaving() || pwdForm.invalid">
+            @if (pwdSaving()) {
+              <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+            }
+            {{ pwdSaving() ? 'Saving…' : 'Update Password' }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ── Account Info (read-only) ─────────────────── -->
+    <section class="settings-card">
+      <div class="card-header">
+        <div class="card-icon-wrap card-icon-wrap--green">
+          <mat-icon>info_outline</mat-icon>
+        </div>
+        <div>
+          <h2 class="card-title">Account Information</h2>
+          <p class="card-sub">Your current account details</p>
+        </div>
+      </div>
+
+      <div class="info-list">
+        <div class="info-row">
+          <span class="info-row-label">Username</span>
+          <span class="info-row-value">{{ user.username }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">Email</span>
+          <span class="info-row-value">{{ user.email }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">Role</span>
+          <span class="info-row-value">{{ user.role | titlecase }}</span>
+        </div>
+      </div>
+
+      <p class="info-note">
+        <mat-icon>info</mat-icon>
+        To change your username or name, go to <strong>My Profile</strong>.
+      </p>
+    </section>
+
+    <!-- ── Danger Zone ───────────────────────────────── -->
+    <section class="settings-card danger-card">
+      <div class="card-header">
+        <div class="card-icon-wrap card-icon-wrap--red">
+          <mat-icon>warning_amber</mat-icon>
+        </div>
+        <div>
+          <h2 class="card-title danger-title">Danger Zone</h2>
+          <p class="card-sub">Irreversible actions — proceed with caution</p>
+        </div>
+      </div>
+
+      <div class="danger-body">
+        <div class="danger-info">
+          <p class="danger-description">
+            Deleting your account will permanently remove all your data including sessions,
+            group memberships, and reviews. This action cannot be undone.
+          </p>
+          @if (deleteError()) {
+            <div class="alert-banner banner-error">
+              <mat-icon>error_outline</mat-icon> {{ deleteError() }}
+            </div>
+          }
+          <div class="delete-confirm-group">
+            <p class="delete-hint">Type <code>DELETE</code> to confirm</p>
+            <mat-form-field appearance="outline" class="delete-confirm-field" subscriptSizing="dynamic">
+              <mat-label>Confirm deletion</mat-label>
+              <input matInput [ngModel]="deleteConfirmText()"
+                (ngModelChange)="deleteConfirmText.set($event)"
+                [ngModelOptions]="{standalone: true}" />
+            </mat-form-field>
+          </div>
+        </div>
+        <button mat-flat-button class="delete-btn"
+          [disabled]="deleteConfirmText() !== 'DELETE'"
+          (click)="deleteAccount()">
+          <mat-icon>delete_forever</mat-icon>
+          Delete My Account
+        </button>
+      </div>
+    </section>
+
+  </div>
+
+</div>

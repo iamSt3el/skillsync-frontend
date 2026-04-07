@@ -1,0 +1,144 @@
+<div class="page">
+
+  <header class="page-header">
+    <div class="header-left">
+      <div class="admin-badge">
+        <mat-icon>admin_panel_settings</mat-icon>
+        Admin Console
+      </div>
+      <h1 class="page-title">Group Management</h1>
+      <p class="page-sub">View, deactivate, or delete learning groups</p>
+    </div>
+    <div class="header-stats">
+      <div class="mini-stat">
+        <span class="mini-stat-value">{{ groups().length }}</span>
+        <span class="mini-stat-label">Total Groups</span>
+      </div>
+      <div class="mini-stat">
+        <span class="mini-stat-value">{{ groups().filter(g => g.active).length }}</span>
+        <span class="mini-stat-label">Active</span>
+      </div>
+    </div>
+  </header>
+
+  @if (actionError()) {
+    <div class="action-error">
+      <mat-icon>error_outline</mat-icon> {{ actionError() }}
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search groups...</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+    </mat-form-field>
+    <span class="results-count">{{ filteredGroups().length }} result(s)</span>
+  </div>
+
+  <!-- States -->
+  @if (loading()) {
+    <mat-card appearance="outlined" class="table-card">
+      <div class="table-responsive">
+        <table class="groups-table">
+          <thead>
+            <tr><th>Group</th><th>Description</th><th>Members</th><th>Status</th><th>Created</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            @for (_ of [1,2,3,4,5]; track _) {
+              <tr>
+                <td>
+                  <div class="group-cell">
+                    <app-skeleton width="32px" height="32px" borderRadius="8px"></app-skeleton>
+                    <app-skeleton height="15px" width="100px" borderRadius="4px"></app-skeleton>
+                  </div>
+                </td>
+                <td><app-skeleton height="14px" width="160px" borderRadius="4px"></app-skeleton></td>
+                <td><app-skeleton height="14px" width="40px" borderRadius="4px"></app-skeleton></td>
+                <td><app-skeleton height="22px" width="60px" borderRadius="999px"></app-skeleton></td>
+                <td><app-skeleton height="14px" width="90px" borderRadius="4px"></app-skeleton></td>
+                <td>
+                  <div class="row-actions">
+                    <app-skeleton width="36px" height="36px" borderRadius="50%"></app-skeleton>
+                    <app-skeleton width="36px" height="36px" borderRadius="50%"></app-skeleton>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </mat-card>
+  } @else if (error()) {
+    <div class="empty-state">
+      <div class="empty-icon-wrapper"><mat-icon>error_outline</mat-icon></div>
+      <p>Failed to load groups. Check admin permissions.</p>
+    </div>
+  } @else if (filteredGroups().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon-wrapper"><mat-icon>search_off</mat-icon></div>
+      <p>No groups match your search.</p>
+    </div>
+  } @else {
+    <mat-card appearance="outlined" class="table-card">
+      <div class="table-responsive">
+        <table class="groups-table">
+          <thead>
+            <tr>
+              <th>Group</th>
+              <th>Description</th>
+              <th>Members</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (g of filteredGroups(); track g.id) {
+              <tr>
+                <td>
+                  <div class="group-cell">
+                    <div class="group-icon-wrap">
+                      <mat-icon>groups</mat-icon>
+                    </div>
+                    <span class="group-name">{{ g.name }}</span>
+                  </div>
+                </td>
+                <td class="desc-cell">{{ g.description || '—' }}</td>
+                <td class="members-cell">
+                  <span class="member-count">
+                    <mat-icon>person</mat-icon>
+                    {{ g.memberCount ?? '?' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge" [class.status--active]="g.active" [class.status--inactive]="!g.active">
+                    {{ g.active ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td class="date-cell">{{ formatDate(g.createdAt) }}</td>
+                <td>
+                  <div class="row-actions">
+                    <button mat-icon-button class="action-btn action-btn--warn"
+                      [disabled]="!g.active"
+                      (click)="deactivate(g)"
+                      title="Deactivate group">
+                      <mat-icon>pause_circle</mat-icon>
+                    </button>
+                    <button mat-icon-button class="action-btn action-btn--danger"
+                      (click)="deleteGroup(g)"
+                      title="Delete group">
+                      <mat-icon>delete_outline</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </mat-card>
+  }
+
+</div>

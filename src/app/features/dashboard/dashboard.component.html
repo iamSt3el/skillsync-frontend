@@ -1,7 +1,12 @@
 <div class="dashboard-layout">
 
-  <aside class="sidebar-wrap">
-    <app-sidebar [activePage]="activePage" (navigate)="navigateTo($event)" />
+  <!-- Mobile overlay backdrop -->
+  @if (mobileSidebarOpen()) {
+    <div class="mobile-overlay" (click)="mobileSidebarOpen.set(false)"></div>
+  }
+
+  <aside class="sidebar-wrap" [class.sidebar-open]="mobileSidebarOpen()">
+    <app-sidebar />
   </aside>
 
   <div class="content-area">
@@ -9,13 +14,18 @@
     <!-- ── Permanent Topbar ──────────────────────────── -->
     <header class="topbar">
       <div class="topbar-left">
+        <!-- Hamburger (mobile only) -->
+        <button class="hamburger-btn" (click)="mobileSidebarOpen.set(!mobileSidebarOpen())" aria-label="Toggle menu">
+          <mat-icon>{{ mobileSidebarOpen() ? 'close' : 'menu' }}</mat-icon>
+        </button>
+
         <mat-icon class="topbar-page-icon">{{ pageInfo().icon }}</mat-icon>
         <span class="topbar-page-title">{{ pageInfo().label }}</span>
       </div>
 
       <div class="topbar-right">
         <!-- Notification Bell -->
-        <button class="topbar-icon-btn" (click)="navigateTo('notifications')"
+        <button class="topbar-icon-btn" [routerLink]="['/dashboard/notifications']"
           [class.has-badge]="unreadCount() > 0" aria-label="Notifications">
           <mat-icon>notifications</mat-icon>
           @if (unreadCount() > 0) {
@@ -24,9 +34,15 @@
         </button>
 
         <!-- User Avatar -->
-        <button class="topbar-avatar-btn" (click)="navigateTo('profile')" aria-label="Profile">
+        <button class="topbar-avatar-btn" [routerLink]="['/dashboard/profile']" aria-label="Profile">
           @if (authService.currentUser$ | async; as user) {
-            <div class="topbar-avatar">{{ userInitials() }}</div>
+            <div class="topbar-avatar">
+              @if (user.profilePictureUrl) {
+                <img class="topbar-avatar-img" [src]="user.profilePictureUrl" [alt]="user.username" />
+              } @else {
+                {{ userInitials() }}
+              }
+            </div>
             <div class="topbar-user-info">
               <span class="topbar-username">{{ user.name || user.username }}</span>
               <span class="topbar-role">{{ user.role | titlecase }}</span>
@@ -38,40 +54,7 @@
 
     <!-- ── Main Content ──────────────────────────────── -->
     <main class="main-content">
-      @if (authService.currentUser$ | async; as user) {
-        @switch (activePage) {
-
-          @case ('overview') {
-            @if (isAdmin)        { <app-admin-overview /> }
-            @else if (isLearner) { <app-learner-dashboard /> }
-            @else if (isMentor)  { <app-mentor-dashboard /> }
-          }
-
-          @case ('admin-users')     { <app-user-management /> }
-          @case ('admin-approvals') { <app-mentor-approvals /> }
-          @case ('skill-catalog')   { <app-manage-skills /> }
-          @case ('admin-analytics') { <app-platform-analytics /> }
-
-          @case ('find-mentors') {
-            @if (isLearner) { <app-find-mentors /> }
-          }
-
-          @case ('sessions')      { <app-my-sessions /> }
-          @case ('groups')        { <app-groups /> }
-          @case ('reviews')       { <app-reviews /> }
-          @case ('profile')       { <app-profile /> }
-          @case ('notifications') { <app-notifications /> }
-
-          @default {
-            <div class="coming-soon">
-              <mat-icon>construction</mat-icon>
-              <h2>Coming Soon</h2>
-              <p>This feature is under development.</p>
-            </div>
-          }
-
-        }
-      }
+      <router-outlet />
     </main>
 
   </div>

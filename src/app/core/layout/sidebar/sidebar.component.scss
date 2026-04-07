@@ -72,6 +72,7 @@
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
+  text-decoration: none;
 
   /* Hover micro-interaction */
   &:hover:not(.nav-item--active) {

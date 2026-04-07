@@ -1,0 +1,136 @@
+:host { display: block; }
+
+.page {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+
+  @media (max-width: 600px) {
+    padding: 1rem;
+  }
+}
+
+/* ── Header ──────────────────────────────────────── */
+.page-header { margin-bottom: 2rem; }
+.page-title  { font-size: 1.75rem; font-weight: 700; color: #0f172a; margin: 0 0 0.25rem; }
+.page-sub    { font-size: 0.9rem; color: #64748b; margin: 0; }
+
+/* ── Layout ──────────────────────────────────────── */
+.settings-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Card ─────────────────────────────────────────── */
+.settings-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.card-icon-wrap {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  mat-icon { font-size: 1.4rem; width: 1.4rem; height: 1.4rem; }
+}
+.card-icon-wrap--blue  { background: #eff6ff; mat-icon { color: #1d4ed8; } }
+.card-icon-wrap--green { background: #f0fdf4; mat-icon { color: #16a34a; } }
+.card-icon-wrap--red   { background: #fef2f2; mat-icon { color: #dc2626; } }
+
+.card-title { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0 0 0.25rem; }
+.card-sub   { font-size: 0.85rem; color: #64748b; margin: 0; }
+
+/* ── Alert Banners ───────────────────────────────── */
+.alert-banner {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0.75rem 1rem; border-radius: 10px;
+  margin-bottom: 1.25rem; font-size: 0.875rem; font-weight: 500;
+  mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
+}
+.banner-success { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.banner-error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+/* ── Password Form ───────────────────────────────── */
+.pwd-form { display: flex; flex-direction: column; gap: 1.1rem; }
+.full-width { width: 100%; }
+
+.form-actions { display: flex; justify-content: flex-end; margin-top: 0.5rem; }
+
+.btn-spinner {
+  margin-right: 6px; display: inline-block; vertical-align: middle;
+  --mdc-circular-progress-active-indicator-color: white;
+}
+
+/* ── Account Info ────────────────────────────────── */
+.info-list { display: flex; flex-direction: column; gap: 0; }
+
+.info-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f8fafc;
+  &:last-child { border-bottom: none; }
+}
+
+.info-row-label { font-size: 0.83rem; color: #94a3b8; font-weight: 500; }
+.info-row-value { font-size: 0.9rem; color: #0f172a; font-weight: 600; }
+
+.info-note {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.8rem; color: #64748b;
+  margin: 1rem 0 0;
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; color: #94a3b8; }
+}
+
+/* ── Danger Zone ─────────────────────────────────── */
+.danger-card { border-color: #fecaca; }
+.danger-title { color: #dc2626; }
+
+.danger-body {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.danger-info { flex: 1; }
+
+.danger-description {
+  font-size: 0.875rem; color: #475569; margin: 0 0 1rem; line-height: 1.6;
+}
+
+.delete-hint { font-size: 0.83rem; color: #64748b; margin: 0 0 0.5rem; }
+.delete-confirm-field { width: 220px; }
+
+.delete-btn {
+  background: #dc2626 !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  height: 40px !important;
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 6px;
+
+  mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
+
+  &[disabled] {
+    background: #e5e7eb !important;
+    color: #9ca3af !important;
+  }
+}

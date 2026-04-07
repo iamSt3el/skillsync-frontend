@@ -20,7 +20,19 @@
   </header>
 
   @if (loading()) {
-    <div class="center-spinner"><mat-spinner diameter="40"></mat-spinner></div>
+    <div class="notif-list">
+      @for (_ of [1,2,3,4,5]; track _) {
+        <div class="notif-item">
+          <div class="notif-icon">
+            <app-skeleton width="40px" height="40px" borderRadius="50%"></app-skeleton>
+          </div>
+          <div class="notif-body" style="display:flex;flex-direction:column;gap:8px">
+            <app-skeleton height="15px" width="75%" borderRadius="4px"></app-skeleton>
+            <app-skeleton height="12px" width="40%" borderRadius="4px"></app-skeleton>
+          </div>
+        </div>
+      }
+    </div>
   } @else if (notifications().length === 0) {
     <div class="empty-state">
       <div class="empty-icon-wrapper">

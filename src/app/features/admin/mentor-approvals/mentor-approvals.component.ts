@@ -5,12 +5,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { AdminService } from 'src/app/core/services/admin.service';
+import { SkeletonComponent } from 'src/app/shared/skeleton/skeleton.component';
 import { MentorResponse } from 'src/app/core/services/mentor.service';
 
 @Component({
   selector: 'app-mentor-approvals',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, MatButtonModule],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, MatButtonModule, SkeletonComponent],
   templateUrl: './mentor-approvals.component.html',
   styleUrl: './mentor-approvals.component.scss',
 })

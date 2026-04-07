@@ -11,7 +11,7 @@ export interface SkillResponse {
 @Injectable({ providedIn: 'root' })
 export class SkillService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://34.14.151.244/api';
+  private baseUrl = 'https://skillsync.mooo.com/api';
 
   getAll(): Observable<SkillResponse[]> {
     return this.http.get<SkillResponse[]>(`${this.baseUrl}/skills`);

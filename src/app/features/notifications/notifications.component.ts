@@ -2,14 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SkeletonComponent } from 'src/app/shared/skeleton/skeleton.component';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { NotificationResponse, NotificationService } from 'src/app/core/services/notification.service';
 
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, SkeletonComponent],
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.scss'],
 })

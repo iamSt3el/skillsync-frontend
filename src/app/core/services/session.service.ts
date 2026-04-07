@@ -4,7 +4,7 @@ import { Observable } from "rxjs";
 
 /** * Session status types matching your backend logic
  */
-export type SessionStatus = 'REQUESTED' | 'ACCEPTED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
+export type SessionStatus = 'PENDING_PAYMENT' | 'REQUESTED' | 'ACCEPTED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
 
 /** * Structure of the session returned from the API
  */
@@ -31,7 +31,7 @@ export interface BookSessionPayload {
 @Injectable({ providedIn: 'root' })
 export class SessionService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://34.14.151.244/api';
+  private baseUrl = 'https://skillsync.mooo.com/api';
 
   /**
    * Fetch all sessions associated with a user ID

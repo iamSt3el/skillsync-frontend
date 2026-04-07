@@ -98,6 +98,12 @@
   justify-content: center;
   background: #ffffff;
   padding: 2rem;
+
+  @media (max-width: 480px) {
+    padding: 1.5rem 1rem;
+    align-items: flex-start;
+    padding-top: 2.5rem;
+  }
 }
 
 .form-card {

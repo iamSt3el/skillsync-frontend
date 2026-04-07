@@ -3,8 +3,8 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from 'src/app/core/auth/auth.service';
+import { SkeletonComponent } from 'src/app/shared/skeleton/skeleton.component';
 import { MentorResponse, MentorService } from 'src/app/core/services/mentor.service';
 import { ReviewResponseDTO, ReviewService } from 'src/app/core/services/review.service';
 import { SessionResponse, SessionService } from 'src/app/core/services/session.service';
@@ -12,7 +12,7 @@ import { SessionResponse, SessionService } from 'src/app/core/services/session.s
 @Component({
   selector: 'app-mentor-dashboard',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule, SkeletonComponent],
   templateUrl: './mentor-dashboard.component.html',
   styleUrls: ['./mentor-dashboard.component.scss'],
 })

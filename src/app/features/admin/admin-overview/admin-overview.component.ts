@@ -2,7 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SkeletonComponent } from 'src/app/shared/skeleton/skeleton.component';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { AdminService } from 'src/app/core/services/admin.service';
@@ -12,7 +12,7 @@ import { MentorResponse } from 'src/app/core/services/mentor.service';
 @Component({
   selector: 'app-admin-overview',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, MatButtonModule],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule, SkeletonComponent],
   templateUrl: './admin-overview.component.html',
   styleUrl: './admin-overview.component.scss',
 })

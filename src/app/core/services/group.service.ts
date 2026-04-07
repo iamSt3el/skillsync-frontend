@@ -14,7 +14,7 @@ export interface GroupResponseDTO {
 @Injectable({ providedIn: 'root' })
 export class GroupService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://34.14.151.244/api';
+  private baseUrl = 'https://skillsync.mooo.com/api';
 
   getAll(): Observable<GroupResponseDTO[]> {
     return this.http.get<GroupResponseDTO[]>(`${this.baseUrl}/groups`);

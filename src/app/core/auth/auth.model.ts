@@ -5,6 +5,7 @@ export interface UserDTO {
   email: string;
   role: 'LEARNER' | 'MENTOR' | 'ADMIN';
   createdAt: string;
+  profilePictureUrl?: string;
 }
 
 // Keep User as alias for compatibility across the app

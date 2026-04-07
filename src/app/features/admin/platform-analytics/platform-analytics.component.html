@@ -12,7 +12,42 @@
   </header>
 
   @if (loading()) {
-    <div class="center-spinner"><mat-spinner diameter="40"></mat-spinner></div>
+    <section class="stats-row">
+      @for (_ of [1,2,3,4]; track _) {
+        <mat-card class="stat-card" appearance="outlined">
+          <mat-card-content>
+            <app-skeleton width="48px" height="48px" borderRadius="12px"></app-skeleton>
+            <div class="stat-body" style="display:flex;flex-direction:column;gap:8px">
+              <app-skeleton height="28px" width="56px" borderRadius="6px"></app-skeleton>
+              <app-skeleton height="13px" width="90px" borderRadius="4px"></app-skeleton>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </section>
+    <div class="two-col">
+      <mat-card appearance="outlined" class="chart-card">
+        @for (_ of [1,2,3]; track _) {
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem">
+            <app-skeleton width="12px" height="12px" borderRadius="50%"></app-skeleton>
+            <app-skeleton height="14px" width="70px" borderRadius="4px"></app-skeleton>
+            <app-skeleton height="14px" width="100%" borderRadius="4px"></app-skeleton>
+            <app-skeleton height="14px" width="30px" borderRadius="4px"></app-skeleton>
+          </div>
+        }
+      </mat-card>
+      <mat-card appearance="outlined" class="chart-card">
+        <div style="display:flex;align-items:flex-end;gap:1rem;height:160px;padding:1rem">
+          @for (h of ['90px','55px','110px','70px','85px','40px']; track h) {
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
+              <app-skeleton height="13px" width="24px" borderRadius="4px"></app-skeleton>
+              <app-skeleton [height]="h" width="100%" borderRadius="4px 4px 0 0"></app-skeleton>
+              <app-skeleton height="11px" width="28px" borderRadius="4px"></app-skeleton>
+            </div>
+          }
+        </div>
+      </mat-card>
+    </div>
   } @else {
 
     <!-- KPI Cards -->

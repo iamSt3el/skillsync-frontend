@@ -33,7 +33,7 @@ export interface MentorApplyResponse{
 @Injectable({ providedIn: 'root' })
 export class MentorService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://34.14.151.244/api';
+  private baseUrl = 'https://skillsync.mooo.com/api';
 
   getAll(filters?: MentorFilters): Observable<MentorResponse[]> {
     let params = new HttpParams();

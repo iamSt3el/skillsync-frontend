@@ -32,10 +32,8 @@
   <button mat-flat-button class="create-btn"
     [disabled]="creating() || !name.trim()"
     (click)="submit()">
-    @if (creating()) {
-      <mat-spinner diameter="18" class="btn-spinner"></mat-spinner> Creating...
-    } @else {
-      <mat-icon>rocket_launch</mat-icon> Create Group
-    }
+    @if (creating()) { <mat-spinner diameter="18" class="btn-spinner"></mat-spinner> }
+    @if (!creating()) { <mat-icon>rocket_launch</mat-icon> }
+    {{ creating() ? 'Creating...' : 'Create Group' }}
   </button>
 </mat-dialog-actions>

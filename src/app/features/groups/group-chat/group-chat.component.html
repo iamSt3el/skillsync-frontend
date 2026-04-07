@@ -1,0 +1,76 @@
+<div class="chat-panel">
+
+  <!-- ── Messages ───────────────────────────────── -->
+  <div class="message-list" #messageList>
+
+    @if (messages().length === 0) {
+      <div class="chat-empty">
+        <div class="chat-empty-icon"><mat-icon>chat_bubble_outline</mat-icon></div>
+        <p>No messages yet.</p>
+        <span>Be the first to say something!</span>
+      </div>
+    }
+
+    @for (msg of messages(); track msg.id; let i = $index) {
+
+      @if (showDateDivider(i)) {
+        <div class="date-divider">
+          <span>{{ formatDividerDate(msg.sentAt) }}</span>
+        </div>
+      }
+
+      <div class="message-row" [class.mine]="isMine(msg)">
+
+        @if (!isMine(msg)) {
+          <div class="msg-avatar" [style.background]="avatarColor(msg.senderId)">
+            @if (msg.senderPic) {
+              <img [src]="msg.senderPic" [alt]="msg.senderName" />
+            } @else {
+              {{ initials(msg.senderName) }}
+            }
+          </div>
+        }
+
+        <div class="msg-body">
+          @if (!isMine(msg)) {
+            <span class="msg-sender">{{ msg.senderName }}</span>
+          }
+          <div class="msg-bubble" [class.msg-bubble--mine]="isMine(msg)">
+            <p class="msg-text">{{ msg.content }}</p>
+            <span class="msg-time">{{ formatTime(msg.sentAt) }}</span>
+          </div>
+        </div>
+
+        @if (isMine(msg)) {
+          <div class="msg-avatar msg-avatar--mine" [style.background]="avatarColor(msg.senderId)">
+            @if (msg.senderPic) {
+              <img [src]="msg.senderPic" [alt]="msg.senderName" />
+            } @else {
+              {{ initials(msg.senderName) }}
+            }
+          </div>
+        }
+
+      </div>
+    }
+
+  </div>
+
+  <!-- ── Input ──────────────────────────────────── -->
+  <div class="chat-input-bar">
+    <div class="input-wrap">
+      <textarea
+        class="chat-input"
+        placeholder="Type a message…"
+        rows="1"
+        [(ngModel)]="inputText"
+        (keydown)="onEnter($event)"
+      ></textarea>
+      <button class="send-btn" [disabled]="!inputText.trim()" (click)="send()">
+        <mat-icon>send</mat-icon>
+      </button>
+    </div>
+    <p class="input-hint">Press <kbd>Enter</kbd> to send &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> for new line</p>
+  </div>
+
+</div>

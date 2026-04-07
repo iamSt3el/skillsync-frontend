@@ -9,7 +9,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  private baseUrl = "http://34.14.151.244/api";
+  private baseUrl = "https://skillsync.mooo.com/api";
 
   private currentUserSubject = new BehaviorSubject<UserDTO | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
@@ -52,6 +52,24 @@ export class AuthService {
   updateProfile(payload: Partial<Pick<UserDTO, 'username' | 'name' | 'email'>>): Observable<UserDTO> {
     return this.http.put<UserDTO>(`${this.baseUrl}/users`, payload).pipe(
       tap(user => this.currentUserSubject.next(user))
+    );
+  }
+
+  updateProfilePicture(pictureUrl: string): Observable<UserDTO> {
+    return this.http.put<UserDTO>(`${this.baseUrl}/users/me/picture`, { pictureUrl }).pipe(
+      tap(user => this.currentUserSubject.next(user))
+    );
+  }
+
+  /** POST /auth/google — send Google ID token, receive JWT */
+  googleLogin(idToken: string): Observable<UserDTO> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/google`, { idToken }).pipe(
+      tap(res => localStorage.setItem('token', res.token)),
+      switchMap(() => this.fetchProfile()),
+      catchError(err => {
+        const message = err.error?.message || err.message || 'Google login failed';
+        return throwError(() => new Error(message));
+      })
     );
   }
 

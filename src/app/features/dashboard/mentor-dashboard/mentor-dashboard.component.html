@@ -25,7 +25,13 @@
       </div>
     </div>
     <div class="hero-right">
-      <div class="hero-avatar">{{ userInitials() }}</div>
+      <div class="hero-avatar">
+        @if (user?.profilePictureUrl) {
+          <img class="hero-avatar-img" [src]="user.profilePictureUrl" [alt]="user.username" />
+        } @else {
+          {{ userInitials() }}
+        }
+      </div>
       <div class="hero-avatar-label">Mentor</div>
     </div>
   </div>
@@ -39,7 +45,8 @@
         </div>
         <div class="stat-body">
           @if (loading()) {
-            <mat-spinner diameter="22"></mat-spinner>
+            <app-skeleton height="28px" width="56px" borderRadius="6px"></app-skeleton>
+            <app-skeleton height="13px" width="90px" borderRadius="4px" style="margin-top:8px"></app-skeleton>
           } @else {
             <span class="stat-value">{{ s.value }}</span>
             <span class="stat-label">{{ s.label }}</span>
@@ -63,7 +70,24 @@
     </div>
 
     @if (loading()) {
-      <div class="center-spinner"><mat-spinner diameter="36"></mat-spinner></div>
+      <div class="request-cards">
+        @for (_ of [1,2,3]; track _) {
+          <div class="request-card">
+            <div class="request-card-left">
+              <app-skeleton width="40px" height="40px" borderRadius="50%"></app-skeleton>
+              <div class="req-info" style="display:flex;flex-direction:column;gap:8px">
+                <app-skeleton height="16px" width="120px" borderRadius="4px"></app-skeleton>
+                <app-skeleton height="13px" width="160px" borderRadius="4px"></app-skeleton>
+                <app-skeleton height="12px" width="100px" borderRadius="4px"></app-skeleton>
+              </div>
+            </div>
+            <div class="req-actions">
+              <app-skeleton height="36px" width="90px" borderRadius="4px"></app-skeleton>
+              <app-skeleton height="36px" width="90px" borderRadius="4px"></app-skeleton>
+            </div>
+          </div>
+        }
+      </div>
     } @else if (pendingRequests().length === 0) {
       <div class="empty-card">
         <mat-icon>event_available</mat-icon>

@@ -91,10 +91,8 @@
   <button mat-flat-button class="submit-btn"
     [disabled]="applicationForm.invalid || isSubmitting()"
     (click)="submitApplication()">
-    @if (isSubmitting()) {
-      <mat-spinner diameter="18" class="btn-spinner"></mat-spinner> Submitting...
-    } @else {
-      <mat-icon>send</mat-icon> Submit Application
-    }
+    @if (isSubmitting()) { <mat-spinner diameter="18" class="btn-spinner"></mat-spinner> }
+    @if (!isSubmitting()) { <mat-icon>send</mat-icon> }
+    {{ isSubmitting() ? 'Submitting...' : 'Submit Application' }}
   </button>
 </mat-dialog-actions>

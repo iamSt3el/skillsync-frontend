@@ -6,7 +6,13 @@
       <p class="date-line">{{ today }} — Here's your learning overview</p>
     </div>
     <div class="header-right">
-      <div class="user-avatar">{{ userInitials() }}</div>
+      <div class="user-avatar">
+        @if (user?.profilePictureUrl) {
+          <img class="user-avatar-img" [src]="user.profilePictureUrl" [alt]="user.username" />
+        } @else {
+          {{ userInitials() }}
+        }
+      </div>
     </div>
   </header>
 
@@ -19,7 +25,8 @@
           </div>
           <div class="stat-body">
             @if (loadingSessions()) {
-              <mat-spinner diameter="24"></mat-spinner>
+              <app-skeleton height="28px" width="56px" borderRadius="6px"></app-skeleton>
+              <app-skeleton height="13px" width="90px" borderRadius="4px" style="margin-top:8px"></app-skeleton>
             } @else {
               <span class="stat-value">{{ s.value }}</span>
               <span class="stat-label">{{ s.label }}</span>
@@ -51,7 +58,33 @@
     <h2 class="section-title">Recommended Mentors</h2>
 
     @if (loadingMentors()) {
-      <div class="center-spinner"><mat-spinner diameter="36"></mat-spinner></div>
+      <div class="mentors-grid">
+        @for (_ of [1,2,3]; track _) {
+          <mat-card class="mentor-card" appearance="outlined">
+            <div class="card-top">
+              <app-skeleton width="52px" height="52px" borderRadius="12px"></app-skeleton>
+              <div class="mentor-info" style="display:flex;flex-direction:column;gap:8px">
+                <app-skeleton height="17px" width="70%" borderRadius="4px"></app-skeleton>
+                <app-skeleton height="13px" width="50%" borderRadius="4px"></app-skeleton>
+              </div>
+            </div>
+            <div style="margin-bottom:1.5rem">
+              <app-skeleton height="13px" width="45%" borderRadius="4px"></app-skeleton>
+            </div>
+            <div class="card-bottom">
+              <div class="skill-chips">
+                @for (_ of [1,2,3]; track _) {
+                  <app-skeleton height="26px" width="64px" borderRadius="6px"></app-skeleton>
+                }
+              </div>
+              <div class="mentor-footer">
+                <app-skeleton height="32px" width="72px" borderRadius="8px"></app-skeleton>
+                <app-skeleton height="38px" width="110px" borderRadius="8px"></app-skeleton>
+              </div>
+            </div>
+          </mat-card>
+        }
+      </div>
     } @else if (mentors().length === 0) {
       <div class="empty-state">
         <div class="empty-icon-wrapper">
@@ -69,7 +102,7 @@
                 {{ mentorInitials(m) }}
               </div>
               <div class="mentor-info">
-                <div class="mentor-name">Mentor #{{ m.userId }}</div>
+                <div class="mentor-name">{{ mentorName(m) }}</div>
                 <div class="mentor-exp">
                   <mat-icon>work_outline</mat-icon>
                   {{ m.experience }} yrs experience
@@ -116,7 +149,27 @@
     <h2 class="section-title">Upcoming Sessions</h2>
 
     @if (loadingSessions()) {
-      <div class="center-spinner"><mat-spinner diameter="36"></mat-spinner></div>
+      <mat-card appearance="outlined" class="table-card">
+        <div class="table-responsive">
+          <table class="sessions-table">
+            <thead>
+              <tr>
+                <th>Date &amp; Time</th><th>Mentor</th><th>Topic</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (_ of [1,2,3]; track _) {
+                <tr>
+                  <td><app-skeleton height="16px" width="120px" borderRadius="4px"></app-skeleton></td>
+                  <td><app-skeleton height="16px" width="100px" borderRadius="4px"></app-skeleton></td>
+                  <td><app-skeleton height="16px" width="140px" borderRadius="4px"></app-skeleton></td>
+                  <td><app-skeleton height="24px" width="80px" borderRadius="999px"></app-skeleton></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </mat-card>
     } @else if (upcomingSessions().length === 0) {
       <div class="empty-state">
         <div class="empty-icon-wrapper">
@@ -131,7 +184,7 @@
             <thead>
               <tr>
                 <th>Date &amp; Time</th>
-                <th>Mentor ID</th>
+                <th>Mentor</th>
                 <th>Topic</th>
                 <th>Status</th>
               </tr>
@@ -145,7 +198,7 @@
                       {{ formatDate(s.sessionDate) }}
                     </div>
                   </td>
-                  <td class="mentor-name-cell">Mentor #{{ s.mentorId }}</td>
+                  <td class="mentor-name-cell">{{ sessionMentorName(s.mentorId) }}</td>
                   <td class="topic-cell">{{ s.topic || '—' }}</td>
                   <td>
                     <span class="status-badge"

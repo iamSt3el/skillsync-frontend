@@ -67,6 +67,17 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.04);
     transform: translateY(-1px);
   }
+
+  &--pending {
+    background: #fffbeb;
+    border-color: #fde68a;
+    opacity: 0.9;
+  }
+
+  &--requested {
+    background: #faf5ff;
+    border-color: #ddd6fe;
+  }
 }
 
 /* Left Side: Icon & Text */
@@ -91,6 +102,56 @@
   border: 1px solid #e2e8f0;
 
   mat-icon { font-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
+
+  &--pending {
+    background: #fef3c7;
+    color: #b45309;
+    border-color: #fde68a;
+  }
+
+  &--requested {
+    background: #ede9fe;
+    color: #6d28d9;
+    border-color: #ddd6fe;
+  }
+}
+
+.pending-payment-note {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #b45309;
+  font-weight: 500;
+  margin: 0 0 2px;
+  mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; }
+}
+
+.awaiting-mentor-note {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #6d28d9;
+  font-weight: 500;
+  margin: 0 0 2px;
+  mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; }
+}
+
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #dd0031;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  padding: 0 4px;
+  margin-left: 5px;
+  vertical-align: middle;
 }
 
 .session-text {
@@ -154,7 +215,8 @@
   border-radius: 999px;
   text-transform: capitalize;
 
-  &--pending   { background: #fef3c7; color: #b45309; }
+  &--pending   { background: #fef3c7; color: #b45309; }   // PENDING_PAYMENT
+  &--requested { background: #ede9fe; color: #6d28d9; }   // REQUESTED (paid, awaiting mentor)
   &--accepted  { background: #d1fae5; color: #047857; }
   &--completed { background: #dbeafe; color: #1d4ed8; }
   &--rejected  { background: #fee2e2; color: #b91c1c; }

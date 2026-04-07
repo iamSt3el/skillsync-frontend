@@ -14,7 +14,7 @@ export interface ReviewResponseDTO {
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://34.14.151.244/api';
+  private baseUrl = 'https://skillsync.mooo.com/api';
 
   getForMentor(mentorId: number): Observable<ReviewResponseDTO[]> {
     return this.http.get<ReviewResponseDTO[]>(`${this.baseUrl}/reviews/mentor/${mentorId}`);
