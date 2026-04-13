@@ -103,7 +103,7 @@
             </div>
             <div class="dist-bar-wrap">
               <div class="dist-bar" style="background:#4285f4"
-                [style.width.%]="users().length ? (learners() / users().length) * 100 : 0">
+                [style.width.%]="totalUsersCount() ? (learners() / totalUsersCount()) * 100 : 0">
               </div>
             </div>
             <span class="dist-count">{{ learners() }}</span>
@@ -115,7 +115,7 @@
             </div>
             <div class="dist-bar-wrap">
               <div class="dist-bar" style="background:#34a853"
-                [style.width.%]="users().length ? (mentorUsers() / users().length) * 100 : 0">
+                [style.width.%]="totalUsersCount() ? (mentorUsers() / totalUsersCount()) * 100 : 0">
               </div>
             </div>
             <span class="dist-count">{{ mentorUsers() }}</span>
@@ -127,7 +127,7 @@
             </div>
             <div class="dist-bar-wrap">
               <div class="dist-bar" style="background:#dd0031"
-                [style.width.%]="users().length ? (adminUsers() / users().length) * 100 : 0">
+                [style.width.%]="totalUsersCount() ? (adminUsers() / totalUsersCount()) * 100 : 0">
               </div>
             </div>
             <span class="dist-count">{{ adminUsers() }}</span>
@@ -139,7 +139,7 @@
             </div>
             <div class="dist-bar-wrap">
               <div class="dist-bar" style="background:#f9a825"
-                [style.width.%]="mentors().length ? (activeMentors() / (mentors().length || 1)) * 100 : 0">
+                [style.width.%]="totalMentors() ? (activeMentors() / totalMentors()) * 100 : 0">
               </div>
             </div>
             <span class="dist-count">{{ activeMentors() }}</span>

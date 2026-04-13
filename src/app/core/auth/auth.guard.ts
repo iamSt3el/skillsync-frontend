@@ -25,5 +25,6 @@ export const adminGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
   if (authService.isLoggedIn && authService.currentUser?.role?.toUpperCase().includes('ADMIN')) return true;
-  return router.createUrlTree(['/dashboard']);
+  // Not an admin → show 403, not a silent redirect to dashboard
+  return router.createUrlTree(['/forbidden']);
 };

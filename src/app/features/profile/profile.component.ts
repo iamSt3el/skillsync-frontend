@@ -1,6 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { CanComponentDeactivate } from 'src/app/core/guards/unsaved-changes.guard';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -36,10 +39,11 @@ export interface PaymentHistory {
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy, CanComponentDeactivate {
   private authService   = inject(AuthService);
   private paymentService = inject(PaymentService);
   private fb            = inject(FormBuilder);
+  private destroy$      = new Subject<void>();
 
   get user() { return this.authService.currentUser!; }
 
@@ -65,13 +69,23 @@ export class ProfileComponent implements OnInit {
       name:     this.user.name,
     });
 
-    this.paymentService.getMyPayments().subscribe({
+    this.paymentService.getMyPayments().pipe(takeUntil(this.destroy$)).subscribe({
       next: (data: any) => {
         this.payments.set(Array.isArray(data) ? data : []);
         this.loadingPayments.set(false);
       },
       error: () => this.loadingPayments.set(false),
     });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  canDeactivate(): boolean {
+    if (!this.editing()) return true;
+    return confirm('You have unsaved profile changes. Discard and leave?');
   }
 
   startEdit() {
@@ -89,7 +103,7 @@ export class ProfileComponent implements OnInit {
     if (this.form.invalid) return;
     this.saving.set(true);
     this.errorMsg.set('');
-    this.authService.updateProfile(this.form.value as any).subscribe({
+    this.authService.updateProfile(this.form.value as any).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => { this.saving.set(false); this.editing.set(false); this.success.set(true); },
       error: (err) => { this.saving.set(false); this.errorMsg.set(err?.error?.message || 'Failed to update profile.'); },
     });
@@ -123,7 +137,7 @@ export class ProfileComponent implements OnInit {
   }
 
   private uploadPicture(dataUrl: string) {
-    this.authService.updateProfilePicture(dataUrl).subscribe({
+    this.authService.updateProfilePicture(dataUrl).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => { this.uploadingPic.set(false); this.success.set(true); },
       error: () => { this.uploadingPic.set(false); this.picError.set('Upload failed. Please try again.'); },
     });

@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatCardModule } from '@angular/material/card';
@@ -10,6 +10,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SkeletonComponent } from 'src/app/shared/skeleton/skeleton.component';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { CanComponentDeactivate } from 'src/app/core/guards/unsaved-changes.guard';
 import { MentorResponse, MentorService } from 'src/app/core/services/mentor.service';
 import { SessionService, BookSessionPayload } from 'src/app/core/services/session.service';
 import { PaymentService } from 'src/app/core/services/payment.service';
@@ -29,12 +32,13 @@ export type BookingStep = 'select' | 'confirm' | 'processing' | 'success' | 'fai
   templateUrl: './book-session.component.html',
   styleUrls: ['./book-session.component.scss']
 })
-export class BookSessionComponent implements OnInit {
+export class BookSessionComponent implements OnInit, OnDestroy, CanComponentDeactivate {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private mentorService = inject(MentorService);
   private sessionService = inject(SessionService);
   private paymentService = inject(PaymentService);
+  private destroy$       = new Subject<void>();
 
   // --- State Signals ---
   mentor = signal<MentorResponse | null>(null);
@@ -89,10 +93,25 @@ export class BookSessionComponent implements OnInit {
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('mentorId');
     if (id) {
-      this.mentorService.getById(+id).subscribe(data => this.mentor.set(data));
+      this.mentorService.getById(+id).pipe(takeUntil(this.destroy$)).subscribe(data => this.mentor.set(data));
     }
     const slots = this.availableTimeSlots();
     if (slots.length > 0) this.selectedTime.set(slots[0]);
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  canDeactivate(): boolean {
+    const step = this.currentStep();
+    // Allow free navigation if booking is complete, failed, or cancelled
+    if (step === 'success' || step === 'failed' || step === 'cancelled') return true;
+    // If user hasn't interacted yet (nothing filled in) also allow
+    const hasInput = this.sessionTopic().trim().length > 0 || step !== 'select';
+    if (!hasInput) return true;
+    return confirm('You have an incomplete booking. Are you sure you want to leave? Your progress will be lost.');
   }
 
   // --- Step navigation ---
@@ -109,13 +128,23 @@ export class BookSessionComponent implements OnInit {
   // --- Payment flow ---
   onConfirmAndPay() {
     if (this.isProcessing()) return;
+    if (!this.mentor()) {
+      this.paymentError.set('Mentor information not loaded. Please go back and try again.');
+      return;
+    }
     this.isProcessing.set(true);
     this.currentStep.set('processing');
 
     const date = this.selectedDate();
-    const year = date?.getFullYear();
-    const month = String(date!.getMonth() + 1).padStart(2, '0');
-    const day = String(date!.getDate()).padStart(2, '0');
+    if (!date) {
+      this.paymentError.set('Please select a date.');
+      this.currentStep.set('select');
+      this.isProcessing.set(false);
+      return;
+    }
+    const year  = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day   = String(date.getDate()).padStart(2, '0');
 
     const [time, modifier] = this.selectedTime().split(' ');
     let [hours, minutes] = time.split(':').map(Number);
@@ -124,12 +153,12 @@ export class BookSessionComponent implements OnInit {
     const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
 
     const payload: BookSessionPayload = {
-      mentorId: this.mentor()?.id,
+      mentorId: this.mentor()!.id,
       sessionDate: `${year}-${month}-${day}T${formattedTime}`,
       topic: this.sessionTopic() || 'General Mentorship Session'
     };
 
-    this.sessionService.book(payload).subscribe({
+    this.sessionService.book(payload).pipe(takeUntil(this.destroy$)).subscribe({
       next: (session: any) => {
         this.bookedSessionId.set(session.id);
         this.initiateRazorpay(session.id);
@@ -143,7 +172,7 @@ export class BookSessionComponent implements OnInit {
   }
 
   private initiateRazorpay(sessionId: number) {
-    this.paymentService.initiatePayment(sessionId).subscribe({
+    this.paymentService.initiatePayment(sessionId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (order) => {
         this.isProcessing.set(false);
         const options = {
@@ -185,7 +214,7 @@ export class BookSessionComponent implements OnInit {
       gatewayPaymentId: response.razorpay_payment_id,
       gatewaySignature: response.razorpay_signature
     };
-    this.paymentService.verifyPayment(verifyData).subscribe({
+    this.paymentService.verifyPayment(verifyData).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.paymentId.set(response.razorpay_payment_id);
         this.currentStep.set('success');

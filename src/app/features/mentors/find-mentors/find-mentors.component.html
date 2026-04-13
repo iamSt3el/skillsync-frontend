@@ -211,7 +211,7 @@
               <span class="rate-label">/hr</span>
             </div>
             <div class="card-actions">
-              <button mat-stroked-button class="view-btn" [routerLink]="['/mentor', m.id]">View</button>
+              <button mat-stroked-button class="view-btn" (click)="openView(m)">View</button>
               <button mat-flat-button color="primary" class="book-btn" [routerLink]="['/book-session', m.id]">Book</button>
             </div>
           </div>

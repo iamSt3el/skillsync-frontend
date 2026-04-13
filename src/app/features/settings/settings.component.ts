@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,6 +10,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-settings',
@@ -28,10 +30,11 @@ import { environment } from 'src/environments/environment';
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss'],
 })
-export class SettingsComponent {
+export class SettingsComponent implements OnDestroy {
   private authService = inject(AuthService);
   private http        = inject(HttpClient);
   private fb          = inject(FormBuilder);
+  private destroy$    = new Subject<void>();
 
   get user() { return this.authService.currentUser!; }
 
@@ -60,7 +63,7 @@ export class SettingsComponent {
     this.pwdError.set('');
     this.pwdSuccess.set(false);
     const { currentPassword, newPassword } = this.pwdForm.value;
-    this.http.put(`${environment.apiUrl}/auth/change-password`, { currentPassword, newPassword }).subscribe({
+    this.http.put(`${environment.apiUrl}/auth/change-password`, { currentPassword, newPassword }).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.pwdSaving.set(false);
         this.pwdSuccess.set(true);
@@ -77,10 +80,15 @@ export class SettingsComponent {
   deleteConfirmText = signal('');
   deleteError       = signal('');
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   deleteAccount() {
     if (this.deleteConfirmText() !== 'DELETE') return;
     this.deleteError.set('');
-    this.http.delete(`${environment.apiUrl}/users/me`).subscribe({
+    this.http.delete(`${environment.apiUrl}/users/me`).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => this.authService.logout(),
       error: (err) => this.deleteError.set(err?.error?.message || 'Failed to delete account.'),
     });

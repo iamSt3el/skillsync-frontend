@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCard } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -31,12 +33,13 @@ import { UserBasic, UserLookupService } from 'src/app/core/services/user-lookup.
   templateUrl: './reviews.component.html',
   styleUrls: ['./reviews.component.scss'],
 })
-export class ReviewsComponent implements OnInit {
+export class ReviewsComponent implements OnInit, OnDestroy {
   private authService    = inject(AuthService);
   private sessionService = inject(SessionService);
   private mentorService  = inject(MentorService);
   private reviewService  = inject(ReviewService);
   private userLookup     = inject(UserLookupService);
+  private destroy$       = new Subject<void>();
 
   get user() { return this.authService.currentUser!; }
   get isLearner() { return this.user.role?.toUpperCase().includes('LEARNER'); }
@@ -58,9 +61,14 @@ export class ReviewsComponent implements OnInit {
   reviews        = signal<ReviewResponseDTO[]>([]);
   reviewerUserMap = signal(new Map<number, UserBasic>());
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   ngOnInit() {
     if (this.isLearner) {
-      this.sessionService.getUserSessions(this.user.id).subscribe({
+      this.sessionService.getUserSessions(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
         next: data => {
           this.completedSessions.set(data.filter(s => s.status === 'COMPLETED'));
           this.loading.set(false);
@@ -69,17 +77,17 @@ export class ReviewsComponent implements OnInit {
       });
     } else {
       // mentor.id == userId by design, so getById(userId) fetches the mentor profile directly
-      this.mentorService.getById(this.user.id).subscribe({
+      this.mentorService.getById(this.user.id).pipe(takeUntil(this.destroy$)).subscribe({
         next: (profile) => {
           this.mentorProfile.set(profile);
           if (profile) {
-            this.reviewService.getForMentor(profile.id).subscribe({
+            this.reviewService.getForMentor(profile.id).pipe(takeUntil(this.destroy$)).subscribe({
               next: r => {
                 this.reviews.set(r);
                 this.loading.set(false);
                 const userIds = [...new Set(r.map(rv => rv.userId))];
                 if (userIds.length) {
-                  this.userLookup.batchFetch(userIds).subscribe(map => this.reviewerUserMap.set(map));
+                  this.userLookup.batchFetch(userIds).pipe(takeUntil(this.destroy$)).subscribe(map => this.reviewerUserMap.set(map));
                 }
               },
               error: () => { this.loading.set(false); },
@@ -110,7 +118,7 @@ export class ReviewsComponent implements OnInit {
       userId: this.user.id,
       rating: this.reviewRating(),
       comment: this.reviewComment,
-    }).subscribe({
+    }).pipe(takeUntil(this.destroy$)).subscribe({
         next: review => {
           this.myReviews.update(list => [...list, review]);
           this.reviewingSession.set(null);

@@ -8,7 +8,7 @@
   <div class="tabs-container">
     <div class="tabs">
       @for (tab of tabs; track tab.key) {
-        <button class="tab" [class.tab--active]="activeTab() === tab.key" (click)="activeTab.set(tab.key)">
+        <button class="tab" [class.tab--active]="activeTab() === tab.key" (click)="setTab(tab.key)">
           {{ tab.label }}
           @if (tab.key === 'pending' && pendingCount() > 0) {
             <span class="tab-badge">{{ pendingCount() }}</span>
@@ -47,7 +47,7 @@
     </div>
   } @else {
     <div class="sessions-list">
-      @for (s of filtered(); track s.id) {
+      @for (s of paginated(); track s.id) {
         <div class="session-card"
              [class.session-card--pending]="s.status === 'PENDING_PAYMENT'"
              [class.session-card--requested]="s.status === 'REQUESTED'">
@@ -121,6 +121,37 @@
         </div>
       }
     </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+      <div class="pagination-bar">
+        <span class="pagination-info">
+          Showing {{ rangeStart }}–{{ rangeEnd }} of {{ filtered().length }}
+        </span>
+        <div class="pagination-controls">
+          <button class="page-btn page-btn--nav"
+                  [disabled]="currentPage() === 0"
+                  (click)="goToPage(currentPage() - 1)">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          @for (p of pageNumbers(); track $index) {
+            @if (p === '...') {
+              <span class="page-ellipsis">…</span>
+            } @else {
+              <button class="page-btn"
+                      [class.page-btn--active]="p === currentPage()"
+                      (click)="goToPage(p)">{{ +p + 1 }}</button>
+            }
+          }
+          <button class="page-btn page-btn--nav"
+                  [disabled]="currentPage() === totalPages() - 1"
+                  (click)="goToPage(currentPage() + 1)">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </div>
+    }
+
   }
 
 </div>

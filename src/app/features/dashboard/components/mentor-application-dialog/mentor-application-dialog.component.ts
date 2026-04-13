@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
@@ -9,6 +9,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SkillService, SkillResponse } from 'src/app/core/services/skill.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { MentorService } from 'src/app/core/services/mentor.service';
 import { ToastService } from 'src/app/core/services/toast.service';
 
@@ -29,7 +31,7 @@ import { ToastService } from 'src/app/core/services/toast.service';
   templateUrl: './mentor-application-dialog.component.html',
   styleUrls: ['./mentor-application-dialog.component.scss']
 })
-export class MentorApplicationDialogComponent implements OnInit {
+export class MentorApplicationDialogComponent implements OnInit, OnDestroy {
   private dialogRef    = inject(MatDialogRef<MentorApplicationDialogComponent>);
   private fb           = inject(FormBuilder);
   private skillService = inject(SkillService);
@@ -37,6 +39,7 @@ export class MentorApplicationDialogComponent implements OnInit {
   private toast        = inject(ToastService);
 
   isSubmitting = signal(false);
+  private destroy$ = new Subject<void>();
 
   // Store fetched skills
   availableSkills = signal<SkillResponse[]>([]);
@@ -49,10 +52,15 @@ export class MentorApplicationDialogComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.skillService.getAll().subscribe({
+    this.skillService.getAll().pipe(takeUntil(this.destroy$)).subscribe({
       next: (skills) => this.availableSkills.set(skills),
-      error: (err) => console.error('Failed to load skills', err)
+      error: () => this.toast.error('Failed to load skills. Please close and try again.'),
     });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   // Helper to get full skill objects based on selected IDs
@@ -70,27 +78,25 @@ export class MentorApplicationDialogComponent implements OnInit {
   }
 
   submitApplication() {
-    if (this.applicationForm.valid) {
-      this.isSubmitting.set(true); // 1. Start loading
-
-      // 2. Call the service and pass the form payload
-      this.mentorService.applyMentor(this.applicationForm.value).subscribe({
-
-        // 3. Handle Success
-        next: () => {
-          this.toast.success('Application submitted! Awaiting admin review.');
-          this.dialogRef.close(true);
-          this.isSubmitting.set(false);
-        },
-        error: (err) => {
-          console.error('Submission failed', err);
-          this.toast.error('Failed to submit application. Please try again.');
-          this.isSubmitting.set(false);
-        }
-
-      });
+    if (!this.applicationForm.valid) {
+      // Show all field errors instead of silently doing nothing
+      this.applicationForm.markAllAsTouched();
+      return;
     }
+    this.isSubmitting.set(true);
+    this.mentorService.applyMentor(this.applicationForm.value).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.toast.success('Application submitted! Awaiting admin review.');
+        this.dialogRef.close(true);
+        this.isSubmitting.set(false);
+      },
+      error: () => {
+        this.toast.error('Failed to submit application. Please try again.');
+        this.isSubmitting.set(false);
+      },
+    });
   }
+
   close() {
     this.dialogRef.close();
   }

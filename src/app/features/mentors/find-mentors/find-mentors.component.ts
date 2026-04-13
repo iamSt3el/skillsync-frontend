@@ -1,16 +1,20 @@
 import { DecimalPipe, SlicePipe } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { SkeletonComponent } from 'src/app/shared/skeleton/skeleton.component';
 import { MentorFilters, MentorResponse, MentorService } from 'src/app/core/services/mentor.service';
 import { SkillResponse, SkillService } from 'src/app/core/services/skill.service';
 import { UserBasic, UserLookupService } from 'src/app/core/services/user-lookup.service';
+import { MentorViewDialogComponent } from '../mentor-view-dialog/mentor-view-dialog.component';
 
 @Component({
   selector: 'app-find-mentors',
@@ -24,16 +28,19 @@ import { UserBasic, UserLookupService } from 'src/app/core/services/user-lookup.
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
+    MatDialogModule,
     MatIconModule,
     SkeletonComponent,
   ],
   templateUrl: './find-mentors.component.html',
   styleUrls: ['./find-mentors.component.scss'],
 })
-export class FindMentorsComponent implements OnInit {
+export class FindMentorsComponent implements OnInit, OnDestroy {
   private mentorService = inject(MentorService);
   private skillService  = inject(SkillService);
   private userLookup    = inject(UserLookupService);
+  private dialog        = inject(MatDialog);
+  private destroy$      = new Subject<void>();
 
   mentors  = signal<MentorResponse[]>([]);
   skills   = signal<SkillResponse[]>([]);
@@ -89,8 +96,13 @@ export class FindMentorsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.skillService.getAll().subscribe({ next: skills => this.skills.set(skills) });
+    this.skillService.getAll().pipe(takeUntil(this.destroy$)).subscribe({ next: skills => this.skills.set(skills) });
     this.loadMentors();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadMentors(page = this.currentPage()) {
@@ -102,7 +114,7 @@ export class FindMentorsComponent implements OnInit {
     if (this.minRating())       f.minRating = this.minRating()!;
     if (this.maxRate())         f.maxRate   = this.maxRate()!;
 
-    this.mentorService.getAll(f, page, this.pageSize).subscribe({
+    this.mentorService.getAll(f, page, this.pageSize).pipe(takeUntil(this.destroy$)).subscribe({
       next: data => {
         this.mentors.set(data.content);
         this.currentPage.set(data.number);
@@ -111,7 +123,7 @@ export class FindMentorsComponent implements OnInit {
         this.loading.set(false);
         const ids = data.content.map(m => m.userId);
         if (ids.length) {
-          this.userLookup.batchFetch(ids).subscribe(map => this.userMap.set(map));
+          this.userLookup.batchFetch(ids).pipe(takeUntil(this.destroy$)).subscribe(map => this.userMap.set(map));
         }
       },
       error: err => {
@@ -160,6 +172,20 @@ export class FindMentorsComponent implements OnInit {
 
   get rangeStart() { return this.currentPage() * this.pageSize + 1; }
   get rangeEnd()   { return Math.min((this.currentPage() + 1) * this.pageSize, this.totalElements()); }
+
+  openView(mentor: MentorResponse) {
+    this.dialog.open(MentorViewDialogComponent, {
+      data: {
+        mentor,
+        user:        this.userMap().get(mentor.userId),
+        avatarColor: this.avatarColor(mentor),
+        initials:    this.mentorInitials(mentor),
+      },
+      panelClass: 'mentor-view-panel',
+      maxWidth: '95vw',
+      autoFocus: false,
+    });
+  }
 
   skillName(id: number): string {
     return this.skills().find(s => s.id === id)?.name ?? `Skill #${id}`;

@@ -10,6 +10,7 @@ import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from './core/auth/auth.service';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
+import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { routes } from './app.routes';
 
 function initAuth(authService: AuthService) {
@@ -23,7 +24,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([jwtInterceptor])),
+    provideHttpClient(withInterceptors([jwtInterceptor, errorInterceptor])),
     provideAnimationsAsync(),
     {
       provide: APP_INITIALIZER,

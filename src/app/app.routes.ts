@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, adminGuard, noAuthGuard } from './core/auth/auth.guard';
+import { unsavedChangesGuard } from './core/guards/unsaved-changes.guard';
 
 export const routes: Routes = [
   {
@@ -54,6 +55,7 @@ export const routes: Routes = [
       },
       {
         path: 'profile',
+        canDeactivate: [unsavedChangesGuard],
         loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent),
       },
       {
@@ -100,7 +102,16 @@ export const routes: Routes = [
   {
     path: 'book-session/:mentorId',
     canActivate: [authGuard],
+    canDeactivate: [unsavedChangesGuard],
     loadComponent: () => import('./features/sessions/book-session/book-session.component').then(m => m.BookSessionComponent),
+  },
+  {
+    path: 'forbidden',
+    loadComponent: () => import('./features/error/forbidden.component').then(m => m.ForbiddenComponent),
+  },
+  {
+    path: 'server-error',
+    loadComponent: () => import('./features/error/server-error.component').then(m => m.ServerErrorComponent),
   },
   {
     path: '**',

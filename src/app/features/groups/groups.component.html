@@ -64,7 +64,7 @@
     </div>
   } @else {
     <div class="cards-list">
-      @for (g of filtered(); track g.id) {
+      @for (g of paginated(); track g.id) {
         <div class="group-card" (click)="openChat(g)">
 
           <!-- Left: icon -->
@@ -123,6 +123,37 @@
         </div>
       }
     </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+      <div class="pagination-bar">
+        <span class="pagination-info">
+          Showing {{ rangeStart }}–{{ rangeEnd }} of {{ filtered().length }}
+        </span>
+        <div class="pagination-controls">
+          <button class="page-btn page-btn--nav"
+                  [disabled]="currentPage() === 0"
+                  (click)="goToPage(currentPage() - 1)">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          @for (p of pageNumbers(); track $index) {
+            @if (p === '...') {
+              <span class="page-ellipsis">…</span>
+            } @else {
+              <button class="page-btn"
+                      [class.page-btn--active]="p === currentPage()"
+                      (click)="goToPage(p)">{{ +p + 1 }}</button>
+            }
+          }
+          <button class="page-btn page-btn--nav"
+                  [disabled]="currentPage() === totalPages() - 1"
+                  (click)="goToPage(currentPage() + 1)">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </div>
+    }
+
   }
 
 </div>

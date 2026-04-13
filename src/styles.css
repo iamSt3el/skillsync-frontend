@@ -26,3 +26,10 @@ html, body {
 * { max-width: 100%; }
 svg, svg * { max-width: none; }
 
+/* Mentor view dialog — rounded panel */
+.mentor-view-panel .mat-mdc-dialog-container {
+  border-radius: 20px !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+

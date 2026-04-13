@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -9,6 +9,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { AdminService } from 'src/app/core/services/admin.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { UserDTO } from 'src/app/core/auth/auth.model';
 
 @Component({
@@ -22,8 +24,9 @@ import { UserDTO } from 'src/app/core/auth/auth.model';
   templateUrl: './user-management.component.html',
   styleUrl: './user-management.component.scss',
 })
-export class UserManagementComponent implements OnInit {
+export class UserManagementComponent implements OnInit, OnDestroy {
   private adminService = inject(AdminService);
+  private destroy$     = new Subject<void>();
 
   users   = signal<UserDTO[]>([]);
   loading = signal(true);
@@ -75,10 +78,15 @@ export class UserManagementComponent implements OnInit {
     this.loadPage(0);
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   loadPage(page: number) {
     this.loading.set(true);
     this.error.set(false);
-    this.adminService.getAllUsers(page, this.pageSize).subscribe({
+    this.adminService.getAllUsers(page, this.pageSize).pipe(takeUntil(this.destroy$)).subscribe({
       next: data => {
         this.users.set(data.content);
         this.currentPage.set(data.number);

@@ -1,10 +1,12 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { AdminService } from 'src/app/core/services/admin.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { SkeletonComponent } from 'src/app/shared/skeleton/skeleton.component';
 import { MentorResponse } from 'src/app/core/services/mentor.service';
 
@@ -15,8 +17,9 @@ import { MentorResponse } from 'src/app/core/services/mentor.service';
   templateUrl: './mentor-approvals.component.html',
   styleUrl: './mentor-approvals.component.scss',
 })
-export class MentorApprovalsComponent implements OnInit {
+export class MentorApprovalsComponent implements OnInit, OnDestroy {
   private adminService = inject(AdminService);
+  private destroy$     = new Subject<void>();
 
   mentors  = signal<MentorResponse[]>([]);
   loading  = signal(true);
@@ -56,10 +59,15 @@ export class MentorApprovalsComponent implements OnInit {
     this.loadPage(0);
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   loadPage(page: number) {
     this.loading.set(true);
     this.error.set(false);
-    this.adminService.getAllMentors(page, this.pageSize).subscribe({
+    this.adminService.getAllMentors(page, this.pageSize).pipe(takeUntil(this.destroy$)).subscribe({
       next: data => {
         this.mentors.set(data.content);
         this.currentPage.set(data.number);
@@ -79,7 +87,7 @@ export class MentorApprovalsComponent implements OnInit {
 
   approve(mentor: MentorResponse) {
     this.actionInProgress.set(mentor.id);
-    this.adminService.approveMentor(mentor.id).subscribe({
+    this.adminService.approveMentor(mentor.id).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.mentors.update(list =>
           list.map(m => m.id === mentor.id ? { ...m, status: 'ACTIVE' } : m)
@@ -96,7 +104,7 @@ export class MentorApprovalsComponent implements OnInit {
 
   reject(mentor: MentorResponse) {
     this.actionInProgress.set(mentor.id);
-    this.adminService.rejectMentor(mentor.id).subscribe({
+    this.adminService.rejectMentor(mentor.id).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.mentors.update(list =>
           list.map(m => m.id === mentor.id ? { ...m, status: 'REJECTED' } : m)
