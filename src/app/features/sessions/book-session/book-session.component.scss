@@ -117,6 +117,38 @@
   padding: 2rem;
 }
 
+// ─── Unavailable Banner ────────────────────────────────────
+.unavail-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #fff7ed;
+  border: 1.5px solid #fed7aa;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+
+  > mat-icon { font-size: 2rem; width: 2rem; height: 2rem; color: #ea580c; flex-shrink: 0; }
+}
+
+.unavail-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  strong { font-size: 0.95rem; color: #9a3412; }
+  span   { font-size: 0.83rem; color: #c2410c; }
+}
+
+.unavail-btn {
+  flex-shrink: 0;
+  font-weight: 600 !important;
+  color: #ea580c !important;
+  border-color: #fed7aa !important;
+  border-radius: 10px !important;
+}
+
 // ─── Page Header ───────────────────────────────────────────
 .page-header {
   margin-bottom: 2rem;

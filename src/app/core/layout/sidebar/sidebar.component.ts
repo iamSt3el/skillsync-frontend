@@ -33,10 +33,11 @@ export class SidebarComponent {
   ];
 
   mentorNavItems = [
-    { label: 'Dashboard',       icon: 'dashboard', link: '/dashboard/overview'  },
-    { label: 'My Sessions',     icon: 'event',     link: '/dashboard/sessions'  },
-    { label: 'Learning Groups', icon: 'groups',    link: '/dashboard/groups'    },
-    { label: 'Reviews',         icon: 'star',      link: '/dashboard/reviews'   },
+    { label: 'Dashboard',       icon: 'dashboard', link: '/dashboard/overview'      },
+    { label: 'My Sessions',     icon: 'event',     link: '/dashboard/sessions'      },
+    { label: 'Availability',    icon: 'schedule',  link: '/dashboard/availability'  },
+    { label: 'Learning Groups', icon: 'groups',    link: '/dashboard/groups'        },
+    { label: 'Reviews',         icon: 'star',      link: '/dashboard/reviews'       },
   ];
 
   adminNavItems = [

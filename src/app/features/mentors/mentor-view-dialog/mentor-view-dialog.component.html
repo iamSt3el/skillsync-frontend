@@ -21,8 +21,9 @@
           {{ mentor.experience }} {{ mentor.experience === 1 ? 'year' : 'years' }} of experience
         </div>
         <div class="hero-badges">
-          <span class="badge badge--available">
-            <span class="avail-dot"></span> Available
+          <span class="badge" [class.badge--available]="isAvailable" [class.badge--unavailable]="!isAvailable">
+            <span class="avail-dot"></span>
+            {{ isAvailable ? 'Available' : 'Not Available' }}
           </span>
           @if (mentor.reviewCount > 0) {
             <span class="badge badge--reviews">
@@ -98,10 +99,17 @@
   <!-- ── Footer Actions ── -->
   <div class="dialog-footer">
     <button mat-stroked-button class="cancel-btn" (click)="close()">Cancel</button>
-    <button mat-flat-button class="book-btn" (click)="book()">
-      <mat-icon>calendar_today</mat-icon>
-      Book a Session
-    </button>
+    @if (isAvailable) {
+      <button mat-flat-button class="book-btn" (click)="book()">
+        <mat-icon>calendar_today</mat-icon>
+        Book a Session
+      </button>
+    } @else {
+      <button mat-flat-button class="book-btn book-btn--disabled" disabled>
+        <mat-icon>event_busy</mat-icon>
+        Not Accepting Sessions
+      </button>
+    }
   </div>
 
 </div>

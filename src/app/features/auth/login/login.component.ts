@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, OnInit, inject } from "@angular/core";
+import { Component, OnInit, inject, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
@@ -46,10 +46,10 @@ export class LoginComponent implements OnInit {
     rememberMe: [false],
   });
 
-  loading       = false;
-  googleLoading = false;
-  errorMessage  = '';
-  showPassword  = false;
+  loading       = signal(false);
+  googleLoading = signal(false);
+  errorMessage  = signal('');
+  showPassword  = signal(false);
 
   get email()    { return this.loginForm.get('email')!; }
   get password() { return this.loginForm.get('password')!; }
@@ -81,25 +81,25 @@ export class LoginComponent implements OnInit {
   /** Called when user clicks the Google button */
   signInWithGoogle() {
     if (typeof google === 'undefined' || !google?.accounts?.id) {
-      this.errorMessage = 'Google Sign-In is not available. Please try again.';
+      this.errorMessage.set('Google Sign-In is not available. Please try again.');
       return;
     }
     google.accounts.id.prompt();
   }
 
   private handleGoogleCredential(response: { credential: string }) {
-    this.googleLoading = true;
-    this.errorMessage = '';
+    this.googleLoading.set(true);
+    this.errorMessage.set('');
 
     this.authService.googleLogin(response.credential).subscribe({
       next: (user) => {
-        this.googleLoading = false;
+        this.googleLoading.set(false);
         const dest = user.role?.toUpperCase().includes('ADMIN') ? ['/dashboard/admin/overview'] : ['/dashboard'];
         this.router.navigate(dest);
       },
       error: (err: Error) => {
-        this.errorMessage = err.message;
-        this.googleLoading = false;
+        this.errorMessage.set(err.message);
+        this.googleLoading.set(false);
       },
     });
   }
@@ -107,19 +107,19 @@ export class LoginComponent implements OnInit {
   onSubmit(): void {
     if (this.loginForm.invalid) return;
 
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
     const { email, password } = this.loginForm.value;
     this.authService.login({ email: email!, password: password! }).subscribe({
       next: (user) => {
-        this.loading = false;
+        this.loading.set(false);
         const dest = user.role?.toUpperCase().includes('ADMIN') ? ['/dashboard/admin/overview'] : ['/dashboard'];
         this.router.navigate(dest);
       },
       error: (err: Error) => {
-        this.errorMessage = err.message;
-        this.loading = false;
+        this.errorMessage.set(err.message);
+        this.loading.set(false);
       },
     });
   }

@@ -67,6 +67,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent),
       },
       {
+        path: 'availability',
+        loadComponent: () => import('./features/availability/availability.component').then(m => m.AvailabilityComponent),
+      },
+      {
         path: 'admin',
         canActivate: [adminGuard],
         children: [

@@ -67,7 +67,7 @@
           <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
             <input
               matInput
-              [type]="showPassword ? 'text' : 'password'"
+              [type]="showPassword() ? 'text' : 'password'"
               formControlName="password"
               placeholder="Min 8 chars, A-Z, 0-9, @$!%*?&"
             />
@@ -75,10 +75,10 @@
               mat-icon-button
               matSuffix
               type="button"
-              (click)="showPassword = !showPassword"
+              (click)="showPassword.set(!showPassword())"
               aria-label="Toggle password visibility"
             >
-              <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
             </button>
             @if (password.invalid && password.touched) {
               <mat-error>
@@ -89,16 +89,16 @@
           </mat-form-field>
         </div>
 
-        @if (errorMessage) {
+        @if (errorMessage()) {
           <div class="api-error">
             <mat-icon>warning_amber</mat-icon>
-            {{ errorMessage }}
+            {{ errorMessage() }}
           </div>
         }
 
         <button mat-flat-button color="primary" type="submit" class="submit-btn"
-          [disabled]="loading || registerForm.invalid">
-          @if (loading) {
+          [disabled]="loading() || registerForm.invalid">
+          @if (loading()) {
             <mat-spinner diameter="20" class="btn-spinner"></mat-spinner> Creating Account...
           } @else {
             CREATE ACCOUNT &rarr;

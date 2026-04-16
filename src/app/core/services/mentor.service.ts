@@ -65,4 +65,8 @@ export class MentorService {
   applyMentor(payload: MentorApplyResponse): Observable<MentorApplyResponse> {
     return this.http.post<MentorApplyResponse>(`${this.baseUrl}/mentors/apply`, payload);
   }
+
+  updateAvailability(id: number, slots: string[]): Observable<MentorResponse> {
+    return this.http.put<MentorResponse>(`${this.baseUrl}/mentors/${id}/availability`, { schedule: slots.join(',') });
+  }
 }

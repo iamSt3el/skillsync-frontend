@@ -15,8 +15,10 @@ export class ToastService {
 
   show(message: string, type: ToastType = 'info', duration = 4000) {
     const id = ++this.nextId;
-    this.toasts.update(list => [...list, { id, type, message }]);
-    setTimeout(() => this.dismiss(id), duration);
+    queueMicrotask(() => {
+      this.toasts.update(list => [...list, { id, type, message }]);
+      setTimeout(() => this.dismiss(id), duration);
+    });
   }
 
   success(message: string) { this.show(message, 'success'); }

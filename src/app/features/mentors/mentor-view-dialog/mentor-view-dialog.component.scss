@@ -123,6 +123,13 @@
     border: 1px solid rgba(255,255,255,0.3);
   }
 
+  &--unavailable {
+    background: rgba(239,68,68,0.25);
+    color: #fca5a5;
+    border: 1px solid rgba(239,68,68,0.35);
+    .avail-dot { background: #f87171; animation: none; }
+  }
+
   &--reviews {
     background: rgba(255,255,255,0.12);
     color: rgba(255,255,255,0.9);
@@ -291,6 +298,12 @@
   display: flex !important;
   align-items: center !important;
   gap: 6px !important;
+
+  &--disabled {
+    background: #e2e8f0 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+  }
 
   mat-icon {
     font-size: 1rem !important;

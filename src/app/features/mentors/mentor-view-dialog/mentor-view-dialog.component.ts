@@ -31,6 +31,11 @@ export class MentorViewDialogComponent {
   get mentor() { return this.data.mentor; }
   get user()   { return this.data.user; }
 
+  get isAvailable(): boolean {
+    const av = this.mentor.availability ?? '';
+    return av.trim().length > 0;
+  }
+
   stars(rating: number) {
     return Array.from({ length: 5 }, (_, i) => i < Math.round(rating));
   }

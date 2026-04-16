@@ -195,6 +195,186 @@
   color: #94a3b8;
 }
 
+/* ── Availability Card ───────────────────────────── */
+.availability-section { margin-bottom: 2rem; }
+
+.avail-card {
+  background: #fff;
+  border: 1.5px solid #d1fae5;
+  border-radius: 20px;
+  padding: 1.4rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  transition: border-color 0.25s ease;
+
+  &--offline { border-color: #fee2e2; }
+}
+
+/* ── Top row: title LEFT · toggle RIGHT ──────────── */
+.avail-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.avail-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.avail-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #dc2626;
+  flex-shrink: 0;
+  transition: background 0.25s;
+
+  &--on {
+    background: #059669;
+    animation: pulse-ring 1.8s ease-out infinite;
+  }
+}
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0   rgba(5,150,105,0.45); }
+  70%  { box-shadow: 0 0 0 6px rgba(5,150,105,0);    }
+  100% { box-shadow: 0 0 0 0   rgba(5,150,105,0);    }
+}
+
+.avail-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* toggle button — label LEFT of the track */
+.toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
+}
+
+.toggle-label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #0f172a;
+  user-select: none;
+  line-height: 1.2;
+}
+
+.avail-hint {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  user-select: none;
+}
+
+.toggle-track {
+  width: 48px;
+  height: 28px;
+  border-radius: 14px;
+  background: #cbd5e1;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.22s ease;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  transition: transform 0.22s ease;
+}
+
+.toggle-btn--on {
+  .toggle-track { background: #059669; }
+  .toggle-thumb { transform: translateX(20px); }
+}
+
+/* ── Bottom row: dropdown LEFT · save RIGHT ──────── */
+.avail-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.slots-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.slots-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.slots-select {
+  width: 260px;
+
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
+}
+
+.slots-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #059669;
+  font-weight: 600;
+
+  mat-icon { font-size: 0.85rem; width: 0.85rem; height: 0.85rem; }
+}
+
+.save-avail-btn {
+  height: 42px !important;
+  border-radius: 11px !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  background: #059669 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px;
+  flex-shrink: 0;
+
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+
+  &:hover:not(:disabled) { background: #047857 !important; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.8s linear infinite; }
+
 /* ── Sections ────────────────────────────────────── */
 .section { margin-bottom: 2rem; }
 

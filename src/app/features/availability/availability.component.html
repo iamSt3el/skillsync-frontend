@@ -1,0 +1,100 @@
+<div class="page">
+
+  <!-- ── Header ─────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Availability</h1>
+      <p class="page-sub">Select the time slots you're open for sessions each day</p>
+    </div>
+    @if (isDirty()) {
+      <button mat-flat-button class="save-btn" (click)="save()" [disabled]="saving()">
+        @if (saving()) {
+          <mat-icon class="spin">sync</mat-icon> Saving...
+        } @else {
+          <mat-icon>check</mat-icon> Save Changes
+        }
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="center-spinner">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else {
+
+    <!-- ── Status Banner ───────────────────────────── -->
+    <div class="status-card" [class.status-card--active]="selectedSlots().length > 0">
+      <div class="status-icon-wrap" [class.status-icon-wrap--active]="selectedSlots().length > 0">
+        <mat-icon>{{ selectedSlots().length > 0 ? 'check_circle' : 'do_not_disturb_on' }}</mat-icon>
+      </div>
+      <div class="status-body">
+        @if (selectedSlots().length > 0) {
+          <span class="status-title">You're accepting sessions</span>
+          <span class="status-sub">
+            <strong>{{ selectedSlots().length }} slot{{ selectedSlots().length > 1 ? 's' : '' }}</strong>
+            selected — learners can book sessions with you
+          </span>
+        } @else {
+          <span class="status-title">You're currently unavailable</span>
+          <span class="status-sub">Select at least one slot below to start accepting sessions</span>
+        }
+      </div>
+      @if (selectedSlots().length > 0) {
+        <span class="status-badge">Available</span>
+      } @else {
+        <span class="status-badge status-badge--off">Unavailable</span>
+      }
+    </div>
+
+    <!-- ── Slot Grid ───────────────────────────────── -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">
+          <span class="section-title-dot"></span>
+          Available Time Slots
+        </h2>
+        @if (selectedSlots().length > 0) {
+          <span class="count-badge">{{ selectedSlots().length }} selected</span>
+        }
+      </div>
+
+      <div class="slots-card">
+        <p class="slots-hint">Click a slot to toggle your availability. Highlighted slots are open for booking.</p>
+        <div class="slots-grid">
+          @for (slot of allSlots; track slot.value) {
+            <button
+              type="button"
+              class="slot-chip"
+              [class.slot-chip--selected]="isSelected(slot.value)"
+              (click)="toggleSlot(slot.value)"
+            >
+              <mat-icon class="slot-icon">
+                {{ isSelected(slot.value) ? 'check_circle' : 'radio_button_unchecked' }}
+              </mat-icon>
+              <span class="slot-label">{{ slot.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Footer Save Bar ─────────────────────────── -->
+    @if (isDirty()) {
+      <div class="unsaved-bar">
+        <div class="unsaved-left">
+          <mat-icon>edit_note</mat-icon>
+          <span>You have unsaved changes</span>
+        </div>
+        <button mat-flat-button class="save-btn" (click)="save()" [disabled]="saving()">
+          @if (saving()) {
+            <mat-icon class="spin">sync</mat-icon> Saving...
+          } @else {
+            <mat-icon>check</mat-icon> Save Changes
+          }
+        </button>
+      </div>
+    }
+
+  }
+</div>

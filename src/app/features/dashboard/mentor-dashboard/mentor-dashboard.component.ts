@@ -13,7 +13,13 @@ import { UserBasic, UserLookupService } from 'src/app/core/services/user-lookup.
 @Component({
   selector: 'app-mentor-dashboard',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule, SkeletonComponent],
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatIconModule,
+    MatButtonModule,
+    SkeletonComponent,
+  ],
   templateUrl: './mentor-dashboard.component.html',
   styleUrls: ['./mentor-dashboard.component.scss'],
 })
@@ -32,6 +38,7 @@ export class MentorDashboardComponent implements OnInit {
   reviewerUserMap = signal(new Map<number, UserBasic>());
   loading         = signal(true);
 
+  // ── Scalar metrics ────────────────────────────────────
   firstName = computed(() => this.user?.name?.split(' ')[0] ?? this.user?.username ?? 'Mentor');
 
   userInitials = computed(() => {
@@ -45,10 +52,10 @@ export class MentorDashboardComponent implements OnInit {
   );
 
   stats = computed(() => [
-    { label: 'Pending Requests', value: this.pendingRequests().length,          sub: 'Awaiting response', icon: 'pending_actions', color: '#f9a825', bg: '#fff8e1' },
-    { label: 'Active Learners',  value: this.activeLearners(),                  sub: 'Currently active',  icon: 'school',          color: '#4285f4', bg: '#e8f0fe' },
-    { label: 'Average Rating',   value: this.mentorProfile()?.rating ?? '—',   sub: `${this.mentorProfile()?.reviewCount ?? 0} reviews`, icon: 'star', color: '#f59e0b', bg: '#fff8e1' },
-    { label: 'Total Sessions',   value: this.sessions().length,                 sub: 'All time',          icon: 'event_available', color: '#34a853', bg: '#e6f4ea' },
+    { label: 'Pending Requests', value: this.pendingRequests().length,        sub: 'Awaiting response', icon: 'pending_actions', color: '#f9a825', bg: '#fff8e1' },
+    { label: 'Active Learners',  value: this.activeLearners(),                sub: 'Currently active',  icon: 'school',          color: '#4285f4', bg: '#e8f0fe' },
+    { label: 'Average Rating',   value: this.mentorProfile()?.rating ?? '—', sub: `${this.mentorProfile()?.reviewCount ?? 0} reviews`, icon: 'star', color: '#f59e0b', bg: '#fff8e1' },
+    { label: 'Total Sessions',   value: this.sessions().length,               sub: 'All time',          icon: 'event_available', color: '#34a853', bg: '#e6f4ea' },
   ]);
 
   get greeting() {
@@ -62,6 +69,7 @@ export class MentorDashboardComponent implements OnInit {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
 
+  // ── Lifecycle ─────────────────────────────────────────
   ngOnInit() {
     this.sessionService.getUserSessions(this.user.id).subscribe({
       next: data => { this.sessions.set(data); this.loading.set(false); },
@@ -71,6 +79,7 @@ export class MentorDashboardComponent implements OnInit {
     this.mentorService.getById(this.user.id).subscribe({
       next: (profile) => {
         this.mentorProfile.set(profile);
+
         if (profile) {
           this.reviewService.getForMentor(profile.id).subscribe({
             next: r => {
@@ -88,6 +97,7 @@ export class MentorDashboardComponent implements OnInit {
     });
   }
 
+  // ── Session actions ───────────────────────────────────
   accept(sessionId: number) {
     this.sessionService.accept(sessionId).subscribe({
       next: updated => this.sessions.update(list =>
@@ -104,6 +114,7 @@ export class MentorDashboardComponent implements OnInit {
     });
   }
 
+  // ── Helpers ───────────────────────────────────────────
   formatDate(d: string) {
     return new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }

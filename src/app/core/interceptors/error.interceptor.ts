@@ -22,6 +22,12 @@ let isRefreshing = false;
 const refreshToken$ = new BehaviorSubject<string | null>(null);
 
 const REFRESH_URL = '/auth/refresh';
+// Auth endpoints — a 401 here means wrong credentials, not expired token.
+// Never attempt a token refresh for these.
+const NO_REFRESH_URLS = ['/auth/login', '/auth/register', '/auth/google', '/auth/refresh'];
+// Requests that run silently in the background — network errors on these
+// should not show a toast (refresh is internal, /users is the init profile fetch).
+const SILENT_URLS = ['/auth/refresh', '/api/users'];
 
 function addToken(req: HttpRequest<unknown>, token: string): HttpRequest<unknown> {
   return req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
@@ -37,8 +43,10 @@ export const errorInterceptor: HttpInterceptorFn = (
 
   return next(req).pipe(
     catchError((err: HttpErrorResponse) => {
-      // Don't attempt refresh for the refresh request itself — that would loop.
-      if (err.status === 401 && !req.url.includes(REFRESH_URL)) {
+      // Only attempt token refresh for 401s on authenticated requests.
+      // Auth endpoints (login, register, google) return 401 for wrong credentials — not expired token.
+      const isAuthEndpoint = NO_REFRESH_URLS.some(url => req.url.includes(url));
+      if (err.status === 401 && !isAuthEndpoint) {
         return handle401(req, next, auth, router);
       }
 
@@ -51,9 +59,13 @@ export const errorInterceptor: HttpInterceptorFn = (
         case 503:
           router.navigate(['/server-error']);
           break;
-        case 0:
-          toast.error('Network error. Please check your internet connection.');
+        case 0: {
+          const isSilent = SILENT_URLS.some(url => req.url.includes(url));
+          if (!isSilent) {
+            toast.error('Network error. Please check your internet connection.');
+          }
           break;
+        }
       }
 
       return throwError(() => err);

@@ -12,6 +12,7 @@ import { AuthService } from './core/auth/auth.service';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { routes } from './app.routes';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 function initAuth(authService: AuthService) {
   return () => {
@@ -32,5 +33,6 @@ export const appConfig: ApplicationConfig = {
       deps: [AuthService],
       multi: true,
     },
+    provideCharts(withDefaultRegisterables()),
   ],
 };

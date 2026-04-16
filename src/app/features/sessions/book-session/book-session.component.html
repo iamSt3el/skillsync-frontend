@@ -46,6 +46,17 @@
           <p>Schedule a 1-on-1 session with Mentor #{{ m.userId }}</p>
         </header>
 
+        @if (isUnavailable()) {
+          <div class="unavail-banner">
+            <mat-icon>event_busy</mat-icon>
+            <div class="unavail-text">
+              <strong>Mentor is not accepting sessions</strong>
+              <span>This mentor hasn't set any available time slots. Check back later or explore other mentors.</span>
+            </div>
+            <a mat-stroked-button routerLink="/find-mentors" class="unavail-btn">Browse Mentors</a>
+          </div>
+        }
+
         <div class="booking-grid">
           <!-- Left: Selection panels -->
           <div class="selection-area">
@@ -183,7 +194,7 @@
               </div>
 
               <button mat-flat-button class="continue-btn"
-                      [disabled]="!selectedTime()"
+                      [disabled]="!selectedTime() || isUnavailable()"
                       (click)="goToConfirm()">
                 Review &amp; Confirm
                 <mat-icon iconPositionEnd>arrow_forward</mat-icon>

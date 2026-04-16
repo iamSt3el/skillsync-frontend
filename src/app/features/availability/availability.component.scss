@@ -1,0 +1,250 @@
+:host { display: block; }
+
+.page {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* ── Header ──────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-title { font-size: 1.75rem; font-weight: 700; color: #0f172a; margin: 0 0 0.25rem; }
+.page-sub   { font-size: 0.95rem; color: #64748b; margin: 0; }
+
+/* ── Save button ─────────────────────────────────────── */
+.save-btn {
+  height: 40px !important;
+  border-radius: 10px !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  background: #059669 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px;
+
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+  &:hover:not(:disabled) { background: #047857 !important; }
+  &[disabled] { opacity: 0.6 !important; }
+}
+
+/* ── Loading ─────────────────────────────────────────── */
+.center-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 4rem;
+}
+
+/* ── Status Card ─────────────────────────────────────── */
+.status-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+  transition: all 0.2s ease;
+
+  &--active {
+    border-color: #a7f3d0;
+    background: #f0fdf4;
+  }
+}
+
+.status-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #f1f5f9;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon { font-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
+
+  &--active {
+    background: #d1fae5;
+    color: #059669;
+  }
+}
+
+.status-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.status-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.status-sub {
+  font-size: 0.82rem;
+  color: #64748b;
+  strong { color: #0f172a; font-weight: 600; }
+}
+
+.status-badge {
+  padding: 4px 14px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #d1fae5;
+  color: #065f46;
+  flex-shrink: 0;
+
+  &--off {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+}
+
+/* ── Section ─────────────────────────────────────────── */
+.section { margin-bottom: 2rem; }
+
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.section-title-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4285f4;
+  flex-shrink: 0;
+}
+
+.count-badge {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #e8f0fe;
+  color: #1a73e8;
+}
+
+/* ── Slots Card ──────────────────────────────────────── */
+.slots-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.slots-hint {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin: 0 0 1.25rem;
+}
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+/* ── Slot Chip ───────────────────────────────────────── */
+.slot-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+
+  &:hover:not(.slot-chip--selected) {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+    color: #334155;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+
+  &--selected {
+    border-color: #a7f3d0;
+    background: #f0fdf4;
+    color: #059669;
+    font-weight: 600;
+
+    .slot-icon { color: #059669; }
+  }
+}
+
+.slot-icon {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  color: #cbd5e1;
+  transition: color 0.15s ease;
+}
+
+.slot-label { white-space: nowrap; }
+
+/* ── Unsaved Bar ─────────────────────────────────────── */
+.unsaved-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #fff;
+  border: 1px solid #fde68a;
+  border-radius: 14px;
+  margin-top: 1rem;
+}
+
+.unsaved-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #92400e;
+  font-weight: 500;
+
+  mat-icon { font-size: 1.2rem; width: 1.2rem; height: 1.2rem; color: #d97706; }
+}
+
+/* ── Spin ────────────────────────────────────────────── */
+.spin { animation: spin 0.8s linear infinite; }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

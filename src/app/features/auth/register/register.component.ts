@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject } from "@angular/core";
+import { Component, inject, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
@@ -41,9 +41,9 @@ export class RegisterComponent {
     password: ['', [Validators.required, Validators.pattern(PASSWORD_PATTERN)]],
   });
 
-  loading = false;
-  errorMessage = '';
-  showPassword = false;
+  loading = signal(false);
+  errorMessage = signal('');
+  showPassword = signal(false);
 
   get username() { return this.registerForm.get('username')!; }
   get email()    { return this.registerForm.get('email')!; }
@@ -52,24 +52,24 @@ export class RegisterComponent {
   onSubmit(): void {
     if (this.registerForm.invalid) return;
 
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
     this.authService.register(this.registerForm.value as any).subscribe({
       next: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.router.navigate(['/dashboard']);
       },
       error: (err: Error) => {
         // If token is already stored, registration succeeded but fetchProfile failed.
         // Navigate anyway — dashboard will re-fetch the profile.
         if (this.authService.token) {
-          this.loading = false;
+          this.loading.set(false);
           this.router.navigate(['/dashboard']);
           return;
         }
-        this.errorMessage = err.message;
-        this.loading = false;
+        this.errorMessage.set(err.message);
+        this.loading.set(false);
       },
     });
   }

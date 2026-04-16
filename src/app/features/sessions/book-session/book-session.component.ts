@@ -57,23 +57,33 @@ export class BookSessionComponent implements OnInit, OnDestroy, CanComponentDeac
   // --- Date constraints ---
   minDate = new Date();
   maxDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
-  allTimeSlots = ['09:00 AM', '10:30 AM', '11:00 AM', '02:00 PM', '04:30 PM', '06:00 PM', '08:00 PM'];
   durations = [30, 60, 90];
+
+  // --- Derived from mentor's availability (e.g. "08:00,09:00,16:00") ---
+  mentorSlots = computed(() => {
+    const raw = this.mentor()?.availability ?? '';
+    if (!raw.trim()) return [];
+    return raw.split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+      .map(slot => this._toDisplaySlot(slot))
+      .sort((a, b) => this._slotMinutes(a) - this._slotMinutes(b));
+  });
+
+  isUnavailable = computed(() => this.mentorSlots().length === 0);
 
   // --- Computed ---
   availableTimeSlots = computed(() => {
     const date = this.selectedDate();
-    if (!date) return [];
+    const slots = this.mentorSlots();
+    if (!date || !slots.length) return [];
     const isToday = date.toDateString() === new Date().toDateString();
-    if (!isToday) return this.allTimeSlots;
+    if (!isToday) return slots;
     const now = new Date();
-    return this.allTimeSlots.filter(slot => {
-      let [time, modifier] = slot.split(' ');
-      let [hours, minutes] = time.split(':').map(Number);
-      if (modifier === 'PM' && hours < 12) hours += 12;
-      if (modifier === 'AM' && hours === 12) hours = 0;
+    return slots.filter(slot => {
       const slotDate = new Date();
-      slotDate.setHours(hours, minutes, 0, 0);
+      const mins = this._slotMinutes(slot);
+      slotDate.setHours(Math.floor(mins / 60), mins % 60, 0, 0);
       return slotDate > now;
     });
   });
@@ -97,6 +107,24 @@ export class BookSessionComponent implements OnInit, OnDestroy, CanComponentDeac
     }
     const slots = this.availableTimeSlots();
     if (slots.length > 0) this.selectedTime.set(slots[0]);
+  }
+
+  // Convert "HH:00" (24h) → "H:00 AM/PM" display string
+  private _toDisplaySlot(slot: string): string {
+    const h = parseInt(slot.split(':')[0], 10);
+    if (h === 0)  return '12:00 AM';
+    if (h < 12)   return `${h}:00 AM`;
+    if (h === 12) return '12:00 PM';
+    return `${h - 12}:00 PM`;
+  }
+
+  // Minutes since midnight for a display slot string
+  private _slotMinutes(display: string): number {
+    const [time, mod] = display.split(' ');
+    let [h, m] = time.split(':').map(Number);
+    if (mod === 'PM' && h < 12) h += 12;
+    if (mod === 'AM' && h === 12) h = 0;
+    return h * 60 + m;
   }
 
   ngOnDestroy() {
